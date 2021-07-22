@@ -37,7 +37,7 @@ class Abreaction:
 
     def create_dm(self, user_id):
         dm_obj = {'recipient_id': user_id}
-        return self.post(f'/users/@me/channels')
+        return self.post(f'/users/@me/channels', dm_obj)
 
     def create_channel(self, guild_id, chn_name, *, chn_type=None):
         chn_obj = {'name': chn_name}
