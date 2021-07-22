@@ -12,35 +12,35 @@ class Url:
         return usr + '/@me'
 
     @staticmethod
-    def to_user(self, usr_id):
+    def user(self, usr_id):
         return usr + '/' + str(usr_id)
 
     @staticmethod
-    def to_dms(self):
+    def dms(self):
         return Url.me() + chn
 
     @staticmethod
-    def to_guilds(self):
+    def guilds(self):
         return Url.me() + gld
 
     @staticmethod
-    def to_guild(self, gld_id):
+    def guild(self, gld_id):
         return gld + '/' + str(gld_id)
 
     @staticmethod
-    def to_channels(self, gld_id):
+    def channels(self, gld_id):
         return Url.guild(gld_id) + chn
 
     @staticmethod
-    def to_channel(self, chn_id):
+    def channel(self, chn_id):
         return chn + '/' + str(chn_id)
 
     @staticmethod
-    def to_messages(self, chn_id):
+    def messages(self, chn_id):
         return Url.channel(chn_id) + msg
 
     @staticmethod
-    def to_message(self, chn_id, msg_id):
+    def message(self, chn_id, msg_id):
         return Url.messages(chn_id) + '/' + str(msg_id)
 
 
