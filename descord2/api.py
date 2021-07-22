@@ -8,39 +8,39 @@ class Url:
     msg = '/messages'
 
     @staticmethod
-    def me(self):
+    def me():
         return usr + '/@me'
 
     @staticmethod
-    def user(self, usr_id):
+    def user(usr_id):
         return usr + '/' + str(usr_id)
 
     @staticmethod
-    def dms(self):
+    def dms():
         return Url.me() + chn
 
     @staticmethod
-    def guilds(self):
+    def guilds():
         return Url.me() + gld
 
     @staticmethod
-    def guild(self, gld_id):
+    def guild(gld_id):
         return gld + '/' + str(gld_id)
 
     @staticmethod
-    def channels(self, gld_id):
+    def channels(gld_id):
         return Url.guild(gld_id) + chn
 
     @staticmethod
-    def channel(self, chn_id):
+    def channel(chn_id):
         return chn + '/' + str(chn_id)
 
     @staticmethod
-    def messages(self, chn_id):
+    def messages(chn_id):
         return Url.channel(chn_id) + msg
 
     @staticmethod
-    def message(self, chn_id, msg_id):
+    def message(chn_id, msg_id):
         return Url.messages(chn_id) + '/' + str(msg_id)
 
 
