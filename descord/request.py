@@ -44,7 +44,7 @@ class Url:
         return Url.messages(chn_id) + '/' + str(msg_id)
 
 
-class Access:
+class Api:
     def __init__(self, access_token, *, is_bot=True, api_version=9):
         auth_prefix = 'Bot' if is_bot else 'Bearer'
         self.auth = {'Authorization': f'{auth_prefix} {access_token.strip()}'}
