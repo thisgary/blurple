@@ -11,6 +11,12 @@ class Abreaction:
     def get(self, path):
         return requests.get(self.url+path, headers=self.auth)
 
+    def get_me(self):
+        return self.get('/users/@me').json()
+    
+    def get_user(self, user_id):
+        return self.get(f'/users/{user_id}')
+
     def get_guilds(self):
         return self.get('/users/@me/guilds').json()
 
@@ -28,6 +34,10 @@ class Abreaction:
 
     def post(self, path, obj):
         return requests.post(self.url+path, headers=self.auth, json=obj)
+
+    def create_dm(self, user_id):
+        dm_obj = {'recipient_id': user_id}
+        return self.post(f'/users/@me/channels')
 
     def create_channel(self, guild_id, chn_name, *, chn_type=None):
         chn_obj = {'name': chn_name}
