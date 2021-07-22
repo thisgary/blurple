@@ -9,35 +9,35 @@ class Url:
 
     @staticmethod
     def me():
-        return usr + '/@me'
+        return Url.usr + '/@me'
 
     @staticmethod
     def user(usr_id):
-        return usr + '/' + str(usr_id)
+        return Url.usr + '/' + str(usr_id)
 
     @staticmethod
     def dms():
-        return Url.me() + chn
+        return Url.me() + Url.chn
 
     @staticmethod
     def guilds():
-        return Url.me() + gld
+        return Url.me() + Url.gld
 
     @staticmethod
     def guild(gld_id):
-        return gld + '/' + str(gld_id)
+        return Url.gld + '/' + str(gld_id)
 
     @staticmethod
     def channels(gld_id):
-        return Url.guild(gld_id) + chn
+        return Url.guild(gld_id) + Url.chn
 
     @staticmethod
     def channel(chn_id):
-        return chn + '/' + str(chn_id)
+        return Url.chn + '/' + str(chn_id)
 
     @staticmethod
     def messages(chn_id):
-        return Url.channel(chn_id) + msg
+        return Url.channel(chn_id) + Url.msg
 
     @staticmethod
     def message(chn_id, msg_id):
