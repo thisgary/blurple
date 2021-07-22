@@ -71,7 +71,7 @@ class Obj:
         if afk_channel: obj['afk_channel_id'] = afk_channel
         if afk_timeout: obj['afk_timeout'] = afk_timeout
         if system_channel: obj['system_channel_id'] = system_channel
-        if system_channel_flags = obj['system_channel_flags'] = system_channel_flags
+        if system_channel_flags: obj['system_channel_flags'] = system_channel_flags
         return obj
 
     @staticmethod
