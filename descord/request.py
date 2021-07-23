@@ -1,5 +1,5 @@
+import url
 import requests
-from descord import url
 
 
 class Api:
