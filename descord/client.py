@@ -6,36 +6,48 @@ import websockets
 from descord import payload
 
 uri = 'wss://gateway.discord.gg/?v=9&encoding=json'
+client = {}
 
-async def gateway_heartbeat(cd, ws):
+async def gateway_heartbeat(intv, ws):
     while True:
-        await asyncio.sleep(cd/1000)
+        await asyncio.sleep(intv/1000)
         await ws.send(payload.heartbeat())
 
+# Monitor incoming gateway events
 async def gateway_monitor(ws, hb, token):
     while True:
-        recv = json.loads(await ws.recv())
-        if recv['op'] == 7: 
+        event = json.loads(await ws.recv())
+        if event['op'] is 7: 
             hb.stop()
             await gateway_connect(token, True)
-        elif recv['op'] == 11: continue
-        if 's' in recv: open('seq', 'w').write(str(recv['s'])) 
-        print(recv)
-        open('log.txt', 'a+').write(f'{recv}\n')
+        elif event['op'] is 11: continue
+        if 's' in event: 
+            client = client.load(open('client.json'))
+            client['seq'] = event['s']
+            json.dump(client, open('client.json', 'w'))
+        print(event)
+        open('log.txt', 'a+').write(f'{event}\n')
 
+# Establish websocket connection with Gateway API
+# Alternatively, resume disconnected session
 async def gateway_connect(token, resume=False):
     async with websockets.connect(uri) as ws:
-        cd = payload.get(await ws.recv(), 'heartbeat_interval')
-        hb = threading.Thread(target=asyncio.run, 
-                args=(gateway_heartbeat(cd,ws),))
+        hello = await ws.recv()
+        hb_intv = payload.data(hello, 'heartbeat_interval')
+        hb = threading.Thread(target=asyncio.run,
+                args=(gateway_heartbeat(hb_intv, ws), ))
         hb.start()
         if resume:
-            session_id = open('session_id').read() 
-            seq = int(open('seq').read()) 
+            client = json.load(open('client.json'))
+            session_id, seq = client['session_id'], client['seq']
             await ws.send(payload.resume(token, session_id, seq))
         else:
             await ws.send(payload.identify(token))
-            session_id = payload.get(await ws.recv(), 'session_id')
-            open('session_id', 'w').write(session_id)
+            ready = await ws.recv()
+            client['session_id'] = payload.data(ready, 'session_id')
+            json.dump(client, open('client.json', 'w'))
         await gateway_monitor(ws, hb, token)
+
+def connect(token):
+    asyncio.run(gateway_connect(token))
 

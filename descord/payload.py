@@ -1,6 +1,6 @@
 import json
 
-def get(pl, attr): # get attr from payload data
+def data(pl, attr): # get attr from payload data
     d = json.loads(pl)['d']
     if attr in d: return d[attr]
 
