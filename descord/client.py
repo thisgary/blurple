@@ -6,7 +6,6 @@ import websockets
 from descord import payload
 
 uri = 'wss://gateway.discord.gg/?v=9&encoding=json'
-client = {}
 
 async def gateway_heartbeat(intv, ws):
     while True:
@@ -31,6 +30,7 @@ async def gateway_monitor(ws, hb, token):
 # Establish websocket connection with Gateway API
 # Alternatively, resume disconnected session
 async def gateway_connect(token, resume=False):
+    client = {}
     async with websockets.connect(uri) as ws:
         hello = await ws.recv()
         hb_intv = payload.data(hello, 'heartbeat_interval')
