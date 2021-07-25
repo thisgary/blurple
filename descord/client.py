@@ -29,22 +29,22 @@ async def gateway_monitor(ws, hb, token):
 
 # Establish websocket connection with Gateway API
 # Alternatively, resume disconnected session
-async def gateway_connect(token, new=True):
+async def gateway_connect(token, new_session=True):
     async with websockets.connect(uri) as ws:
-        hello = await ws.recv()
+        hello = await ws.recv() # Hello
         hb_intv = payload.data(hello, 'heartbeat_interval')
         hb = threading.Thread(target=asyncio.run,
                 args=(gateway_heartbeat(hb_intv, ws),))
         hb.start()
-        if new:
-            await ws.send(payload.identify(token))
-            ready = await ws.recv()
+        if new_session:
+            await ws.send(payload.identify(token)) # Identify
+            ready = await ws.recv() # Ready
             ss = {'session_id': payload.data(ready, 'session_id')}
             json.dump(ss, open('session.json', 'w'))
         else:
             ss = json.load(open('session.json'))
             session_id, seq = ss['session_id'], ss['seq']
-            await ws.send(payload.resume(token, session_id, seq))
+            await ws.send(payload.resume(token, session_id, seq)) # Resume
         await gateway_monitor(ws, hb, token)
 
 def connect(token):
