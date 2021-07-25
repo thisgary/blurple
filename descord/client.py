@@ -6,10 +6,7 @@ import websockets
 from descord import payload
 
 uri = 'wss://gateway.discord.gg/?v=9&encoding=json'
-ss = {
-        'session_id': None
-        'seq': None
-        }
+ss = {'session_id': None, 'seq': None}
 
 async def gateway_heartbeat(intv, ws):
     while True:
