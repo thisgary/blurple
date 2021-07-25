@@ -8,7 +8,7 @@ def create(name, description, *options):
     cmd_obj = {'name': name, 'description': description, 'options': options}
     cmd = json.load(open('command.json'))
     cmd['list'].append(cmd_obj)
-    json.dump(cmd, open('commands.json','w'))
+    json.dump(cmd, open('command.json','w'))
 
 def option(opt_type: int, name, description, **optional):
     opt_obj = {'type': opt_type, 'name': name, 'description': description}
