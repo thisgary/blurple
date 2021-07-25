@@ -1,0 +1,40 @@
+import json
+import asyncio
+import requests
+import threading
+import websockets
+
+uri = 'wss://gateway.discord.gg/?v=9&encoding=json'
+
+def gateway_payload(op, **d):
+    return json.dumps({'op': op, 'd': d})
+
+async def gateway_heartbeat(cd, ws):
+    while True:
+        await asyncio.sleep(cd/1000)
+        await ws.send(gateway_payload(1))
+
+async def gateway_monitor(ws, token):
+    while True:
+        recv = json.loads(await ws.recv())
+        if recv['op'] == 7:
+            op6 = payload(6, token=token,
+                    session_id=open('session_id').read(), 
+                    seq=open('seq').read())
+            await ws.send(op6)
+        elif recv['op'] == 11: continue
+        if 's' in recv: open('seq', 'w').write(recv['s']) 
+        print(recv)
+        open('log.txt', 'a+').write(f'{recv}\n')
+
+async def gateway_connect(token):
+    async with websockets.connect(uri) as ws:
+        op10 = json.loads(await ws.recv())
+        cd = op10['d']['heartbeat_interval']
+        threading.Thread(target=asyncio.run, args=(gateway_heartbeat(cd,ws),))
+        op0 = json.loads(await ws.recv())
+        session_id = op0['d']['session_id']
+        open('session_id', 'w').write(session_id)
+        await gateway_monitor(ws, token)
+
+
