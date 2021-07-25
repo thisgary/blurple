@@ -16,5 +16,5 @@ def option(opt_type: int, name, description, **optional):
     return opt_obj
 
 def choice(name, value):
-    ch_obj {'name': name, 'value': value}
+    ch_obj = {'name': name, 'value': value}
     return ch_obj
