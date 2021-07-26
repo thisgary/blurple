@@ -1,8 +1,8 @@
 import json
 import asyncio
 import requests
+import threading
 import websockets
-import multiprocessing
 from descord import payload
 
 uri = 'wss://gateway.discord.gg/?v=9&encoding=json'
@@ -11,13 +11,15 @@ async def gateway_heartbeat(intv, ws):
     while True:
         await asyncio.sleep(intv/1000)
         await ws.send(payload.heartbeat())
+        if hb_kill: break
 
 # Monitor incoming gateway events
 async def gateway_monitor(ws, hb, token):
     while True:
         event = json.loads(await ws.recv())
-        if event['op'] is 7: 
-            hb.stop()
+        if event['op'] is 7:
+            hb_kill = True
+            hb.join()
             await gateway_connect(token, False)
         elif event['op'] is 11: continue
         if 's' in event: 
@@ -32,8 +34,9 @@ async def gateway_monitor(ws, hb, token):
 async def gateway_connect(token, new_session=True):
     async with websockets.connect(uri) as ws:
         hello = await ws.recv() # Hello
+        hb_kill = False
         hb_intv = payload.data(hello, 'heartbeat_interval')
-        hb = multiprocessing.Process(target=asyncio.run,
+        hb = threading.Thread(target=asyncio.run,
                 args=(gateway_heartbeat(hb_intv, ws),))
         hb.start()
         if new_session:
