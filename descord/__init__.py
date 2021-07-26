@@ -1,2 +1,3 @@
-from .client import Gateway
+from .websocket import *
+from .request   import *
 

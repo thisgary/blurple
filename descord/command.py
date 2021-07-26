@@ -1,5 +1,4 @@
 import json
-import requests
 
 cmd = {'list': []}
 json.dump(cmd, open('command.json','w'))

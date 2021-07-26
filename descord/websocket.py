@@ -5,6 +5,8 @@ import threading
 import websockets
 from descord import payload
 
+__all__ = ('Gateway',)
+
 
 class Gateway:
     class Heartbeat:
@@ -37,8 +39,8 @@ class Gateway:
             self.hb = self.Heartbeat(hb_intv, ws)
             self.hb.start()
             if not resume:
-                await ws.send(payload.identify(self.token)) # Identify
-                ready = await ws.recv() # Ready
+                await ws.send(payload.identify(self.token))
+                ready = await ws.recv()
                 ss = {
                         'session_id': payload.data(ready, 'session_id'),
                         'seq': None}
@@ -46,7 +48,7 @@ class Gateway:
             else:
                 ss = json.load(open('session.json'))
                 session_id, seq = ss['session_id'], ss['seq']
-                await ws.send(payload.resume(self.token, session_id, seq)) # Resume
+                await ws.send(payload.resume(self.token, session_id, seq))
             await self.monitor(ws)
 
     async def monitor(self, ws):
