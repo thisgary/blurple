@@ -54,10 +54,10 @@ class Gateway:
     async def monitor(self, ws):
         while True:
             event = json.loads(await ws.recv())
-            if event['op'] is 7:
+            if event['op'] == 7:
                 self.hb.stop()
                 await self.bridge(True)
-            elif event['op'] is 11: continue
+            elif event['op'] == 11: continue
             if 's' in event: 
                 ss = json.load(open('session.json'))
                 ss['seq'] = event['s']

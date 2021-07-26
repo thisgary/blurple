@@ -66,6 +66,6 @@ class Request:
 
     def create_message(self, chn_id, msg_con, **kwargs):
         msg_obj = {'content': msg_con}
-        chn_obj.update(kwargs)
+        msg_obj.update(kwargs)
         return self.post(messages(chn_id), msg_obj)
 
