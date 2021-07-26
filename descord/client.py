@@ -38,16 +38,19 @@ class Gateway:
             self.hb = Heartbeat(hb_intv, ws)
             self.hb.start()
             if not resume:
-                await ws.send(payload.identify(token)) # Identify
+                await ws.send(payload.identify(self.token)) # Identify
                 ready = await ws.recv() # Ready
-                ss = {'session_id': payload.data(ready, 'session_id')}
+                ss = {
+                        'session_id': payload.data(ready, 'session_id'),
+                        'seq': None
+                        }
                 json.dump(ss, open('session.json', 'w'))
             else:
                 ss = json.load(open('session.json'))
                 session_id, seq = ss['session_id'], ss['seq']
-                await ws.send(payload.resume(token, session_id, seq)) # Resume
+                await ws.send(payload.resume(self.token, session_id, seq)) # Resume
             await self.monitor(ws)
-            
+
     async def monitor(self, ws):
         while True:
             event = json.loads(await ws.recv())
@@ -61,7 +64,7 @@ class Gateway:
                 json.dump(ss, open('session.json', 'w'))
             print(event)
             open('log.txt', 'a+').write(f'{event}\n')
-        
+
     def connect(self):
         asyncio.run(self.bridge())
 
