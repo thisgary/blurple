@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 setup(
         name='Descord2',
         packages=find_packages(include=['descord',]),
-        version='0.2-12-g6e451e6',
+        version='0.2-13-ga4e96a9',
         description='Discord API Python wrapper for learning purposes.',
         author='thisgary',
         license='MIT',

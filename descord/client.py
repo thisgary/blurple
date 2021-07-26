@@ -6,12 +6,14 @@ import websockets
 from descord import payload
 
 uri = 'wss://gateway.discord.gg/?v=9&encoding=json'
+hb_kill = False
 
 async def gateway_heartbeat(intv, ws):
     while True:
         await asyncio.sleep(intv/1000)
-        await ws.send(payload.heartbeat())
         if hb_kill: break
+        await ws.send(payload.heartbeat())
+    print('Stopped heartbeating')
 
 # Monitor incoming gateway events
 async def gateway_monitor(ws, hb, token):
@@ -34,7 +36,6 @@ async def gateway_monitor(ws, hb, token):
 async def gateway_connect(token, new_session=True):
     async with websockets.connect(uri) as ws:
         hello = await ws.recv() # Hello
-        hb_kill = False
         hb_intv = payload.data(hello, 'heartbeat_interval')
         hb = threading.Thread(target=asyncio.run,
                 args=(gateway_heartbeat(hb_intv, ws),))
