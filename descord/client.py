@@ -18,6 +18,8 @@ async def gateway_heartbeat(intv, ws):
 # Monitor incoming gateway events
 async def gateway_monitor(ws, hb, token):
     while True:
+        hb_kill = True
+        hb.join()
         event = json.loads(await ws.recv())
         if event['op'] is 7:
             hb_kill = True
