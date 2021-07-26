@@ -1,8 +1,8 @@
 import json
 import asyncio
 import requests
-import threading
 import websockets
+import multiprocessing
 from descord import payload
 
 uri = 'wss://gateway.discord.gg/?v=9&encoding=json'
@@ -33,7 +33,7 @@ async def gateway_connect(token, new_session=True):
     async with websockets.connect(uri) as ws:
         hello = await ws.recv() # Hello
         hb_intv = payload.data(hello, 'heartbeat_interval')
-        hb = threading.Thread(target=asyncio.run,
+        hb = multiprocessing.Process(target=asyncio.run,
                 args=(gateway_heartbeat(hb_intv, ws),))
         hb.start()
         if new_session:
