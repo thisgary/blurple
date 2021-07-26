@@ -8,8 +8,8 @@ on:
 
 jobs:
   build:
+    environment: TEST_SECRET
     runs-on: ubuntu-latest
-    environment: Python
     steps:
     - uses: actions/checkout@v2
     - name: Install dependencies
@@ -18,3 +18,6 @@ jobs:
         python -m pip install pytest
     - name: Test with Pytest
       run: python setup.py pytest
+      env:
+              TOKEN: ${{ secrets.TOKEN }}
+              CHANNEL: ${{ secrets.CHANNEL }}
