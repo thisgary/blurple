@@ -7,21 +7,32 @@ from descord import payload
 
 uri = 'wss://gateway.discord.gg/?v=9&encoding=json'
 
-async def gateway_heartbeat(intv, ws):
-    while True:
-        await asyncio.sleep(intv/1000)
-        if hb_kill: break
-        await ws.send(payload.heartbeat())
-    print('Stopped heartbeating')
+
+class Heartbeat:
+    def __init__(self, interval, connection):
+        self.alive = True
+        self.interval = interval/1000
+        self.connection = connection
+
+    async def beat(self):
+        while self.alive:
+            await asyncio.sleep(self.interval)
+            await self.connection.send(payload.heartbeat())
+        print('Stopped heartbeating')
+
+    def start(self):
+        threading.Thread(target=asyncio.run, args=(self.beat(),)).start()
+
+    def stop(self):
+        self.alive = False
+
 
 # Monitor incoming gateway events
 async def gateway_monitor(ws, hb, token):
     while True:
         event = json.loads(await ws.recv())
         if event['op'] is 7:
-            global hb_kill
-            hb_kill = True
-            hb.join()
+            hb.stop()
             await gateway_connect(token, False)
         elif event['op'] is 11: continue
         if 's' in event: 
@@ -36,11 +47,8 @@ async def gateway_monitor(ws, hb, token):
 async def gateway_connect(token, new_session=True):
     async with websockets.connect(uri) as ws:
         hello = await ws.recv() # Hello
-        global hb_kill
-        hb_kill = False
         hb_intv = payload.data(hello, 'heartbeat_interval')
-        hb = threading.Thread(target=asyncio.run,
-                args=(gateway_heartbeat(hb_intv, ws),))
+        hb = Heartbeat(hb_intv, ws)
         hb.start()
         if new_session:
             await ws.send(payload.identify(token)) # Identify
