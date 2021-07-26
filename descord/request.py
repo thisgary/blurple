@@ -48,7 +48,7 @@ class Request:
         return self.get(message(chn_id, msg_id))
 
     def post(self, path, json):
-        return requests.post(path, headers=self.auth, json=json)
+        return requests.post(self.url+path, headers=self.auth, json=json)
 
     def create_dm(self, usr_id):
         dm_obj = {'recipient_id': usr_id}
