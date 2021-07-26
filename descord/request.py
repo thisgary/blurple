@@ -1,6 +1,6 @@
 import requests
 
-__all__ = ('Request')
+__all__ = ['Request']
 
 api  = 'https://discord.com/api'
 

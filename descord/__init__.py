@@ -1,3 +1,3 @@
-from .websocket import Gateway
-from .request   import Request
+from .websocket import *
+from .request import *
 

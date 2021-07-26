@@ -5,7 +5,7 @@ import threading
 import websockets
 from descord import payload
 
-__all__ = ('Gateway',)
+__all__ = ['Gateway']
 
 
 class Gateway:
