@@ -21,4 +21,3 @@ def identify(token):
 def resume(token, session_id, seq):
     return create(6, token=token, session_id=session_id, seq=seq)
 
-
