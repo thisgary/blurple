@@ -15,14 +15,14 @@ class Gateway:
             self.interval   = interval/1000
             self.connection = connection
 
-        async def async_start(self):
+        async def heartbeating(self):
             while self.alive:
                 await asyncio.sleep(self.interval)
                 await self.connection.send(payload.heartbeat())
             print('Stopped heartbeating')
 
         def start(self): 
-            threading.Thread(target=asyncio.run, args=(self.async_start(),)).start()
+            threading.Thread(target=asyncio.run, args=(self.heartbeating(),)).start()
 
         def stop(self):
             self.alive = False
@@ -32,7 +32,7 @@ class Gateway:
         self.token = token
         self.uri   = f'wss://gateway.discord.gg/?v={version}&encoding=json'
 
-    async def async_connect(self, resume=False):
+    async def connection(self, resume=False):
         async with websockets.connect(self.uri) as ws:
             hello   = await ws.recv() # Hello
             hb_intv = payload.data(hello, 'heartbeat_interval')
@@ -56,7 +56,7 @@ class Gateway:
             event = json.loads(await ws.recv())
             if event['op'] == 7:
                 self.hb.stop()
-                await self.async_connect(True)
+                await self.connection(True)
             elif event['op'] == 11:
                 if not debug: continue # Ignoring logging
             if 's' in event: 
@@ -67,5 +67,5 @@ class Gateway:
             if debug: open('log.txt', 'a+').write(f'{event}\n') # Debugging purpose
 
     def connect(self):
-        asyncio.run(self.async_connect())
+        asyncio.run(self.connection())
 
