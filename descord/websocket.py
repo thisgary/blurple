@@ -8,63 +8,68 @@ from descord import payload
 __all__ = ['Gateway']
 
 
+class Heartbeat:
+    def __init__(self, intv, conn):
+        self.beat = True
+        self.intv = intv/1000
+        self.conn = conn
+        threading.Thread(target=asyncio.run, args=(self.op1(),)).start()
+
+    async def op1(self):
+        print('[OP1 STARTED]')
+        while self.beat:
+            await self.conn.send(payload.heartbeat())
+            await asyncio.sleep(self.intv)
+        print('[OP1 STOPPED]')
+
+    def stop(self): self.beat = False
+
+
 class Gateway:
-    class Heartbeat:
-        def __init__(self, interval, connection):
-            self.alive      = True
-            self.interval   = interval/1000
-            self.connection = connection
-
-        async def heartbeating(self):
-            while self.alive:
-                await asyncio.sleep(self.interval)
-                await self.connection.send(payload.heartbeat())
-            print('Stopped heartbeating')
-
-        def start(self): 
-            threading.Thread(target=asyncio.run, args=(self.heartbeating(),)).start()
-
-        def stop(self):
-            self.alive = False
-
-
     def __init__(self, token, *, version=9):
         self.token = token
         self.uri   = f'wss://gateway.discord.gg/?v={version}&encoding=json'
 
-    async def connection(self, resume=False):
-        async with websockets.connect(self.uri) as ws:
-            hello   = await ws.recv() # Hello
-            hb_intv = payload.data(hello, 'heartbeat_interval')
-            self.hb = self.Heartbeat(hb_intv, ws)
-            self.hb.start()
-            if not resume:
-                await ws.send(payload.identify(self.token))
-                ready = await ws.recv()
-                ss = {
-                        'session_id': payload.data(ready, 'session_id'),
-                        'seq': None}
-                json.dump(ss, open('session.json', 'w'))
-            else:
-                ss = json.load(open('session.json'))
-                session_id, seq = ss['session_id'], ss['seq']
-                await ws.send(payload.resume(self.token, session_id, seq))
-            await self.monitor(ws)
+    async def connection(self, res=False):
+        with websockets.connect(self.uri) as self.ws:
+            await self.hello_ack()
+            if res: await self.resume()
+            else: await self.identify()
+            await self.monitor()
 
-    async def monitor(self, ws, debug=True):
+    async def hello_ack(self):
+        op10 = await self.ws.recv()
+        intv = payload.data(op10, 'heartbeat_interval')
+        self.hb = Heartbeat(intv, self.ws)
+
+    async def identify(self):
+        op2 = payload.identify(self.token)
+        await self.ws.send(op2)
+        ready = await ws.recv()
+        ss_id = payload.data(ready, 'session_id')
+        ss = {'session_id': ss_id}
+        json.dump(ss, open('session.json', 'w'))
+
+    async def resume(self):
+        ss = json.load(open('session.json'))
+        op6 = payload.resume(self.token, ss['session_id'], ss['seq'])
+        await self.ws.send(op6)
+
+    async def monitor(self, debug=True):
         while True:
-            event = json.loads(await ws.recv())
-            if event['op'] == 7:
-                self.hb.stop()
-                await self.connection(True)
-            elif event['op'] == 11:
-                if not debug: continue # Ignoring logging
-            if 's' in event: 
+            pls = await self.ws.recv()
+            print(pls)
+            # Illegal, personal debug use only
+            if debug: open('log.txt', 'a+').write(pls+'\n')
+            op = pl['op']
+            if op == 0:
                 ss = json.load(open('session.json'))
                 ss['seq'] = event['s']
                 json.dump(ss, open('session.json', 'w'))
-            print(event)
-            if debug: open('log.txt', 'a+').write(f'{event}\n') # Debugging purpose
+            elif op == 7: break
+            elif op == 11 and debug: continue
+        self.hb.stop()
+        await self.connection(True)
 
     def connect(self):
         asyncio.run(self.connection())
