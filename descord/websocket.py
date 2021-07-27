@@ -31,14 +31,13 @@ class Gateway:
         self.uri   = f'wss://gateway.discord.gg/?v={version}&encoding=json'
 
     async def connection(self, res=False):
-        with websockets.connect(self.uri) as ws:
-            self.ws = ws
-            await self.hello_ack()
-            if res: await self.resume()
-            else: await self.identify()
+        with websockets.connect(self.uri) as self.ws:
+            await self.hello()
+            if not res: await self.identify()
+            else: await self.resume()
             await self.monitor()
 
-    async def hello_ack(self):
+    async def hello(self):
         op10 = await self.ws.recv()
         intv = payload.data(op10, 'heartbeat_interval')
         self.hb = Heartbeat(intv, self.ws)
