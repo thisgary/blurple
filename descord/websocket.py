@@ -31,40 +31,39 @@ class Gateway:
         self.uri   = f'wss://gateway.discord.gg/?v={version}&encoding=json'
 
     async def connection(self, res=False):
-        async with websockets.connect(self.uri) as ws:
-            await self.hello(ws)
-            if not res: await self.identify(ws)
-            else: await self.resume(ws)
-            await self.monitor(ws)
+        async with websockets.connect(self.uri) as self.ws:
+            await self.hello()
+            if not res: await self.identify()
+            else: await self.resume()
+            await self.monitor()
 
-    async def hello(self, ws):
-        op10 = await ws.recv()
+    async def hello(self):
+        op10 = await self.ws.recv()
         intv = payload.data(op10, 'heartbeat_interval')
-        self.hb = Heartbeat(intv, ws)
+        self.hb = Heartbeat(intv, self.ws)
 
-    async def identify(self, ws):
+    async def identify(self):
         op2 = payload.identify(self.token)
         print(0)
-        await ws.send(op2)
+        await self.ws.send(op2)
         print(1)
-        ready = await ws.recv()
+        ready = await self.ws.recv()
         print(ready)
         ss_id = payload.data(ready, 'session_id')
         ss = {'session_id': ss_id}
         json.dump(ss, open('session.json', 'w'))
 
-    async def resume(self, ws):
+    async def resume(self):
         ss = json.load(open('session.json'))
         op6 = payload.resume(self.token, ss['session_id'], ss['seq'])
-        await ws.send(op6)
+        await self.ws.send(op6)
 
-    async def monitor(self, ws, debug=True):
+    async def monitor(self, debug=True):
         while True:
-            pls = await ws.recv()
+            pls = await self.ws.recv()
             print(pls)
             # Illegal, personal debug use only
             if debug: open('log.txt', 'a+').write(pls+'\n')
-            pl = json.loads(pls)
             op = pl['op']
             if op == 0:
                 ss = json.load(open('session.json'))
@@ -74,6 +73,7 @@ class Gateway:
             elif op == 11 and debug: continue
         self.hb.stop()
         await self.connection(True)
+
     def connect(self):
         asyncio.run(self.connection())
 
