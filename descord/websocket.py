@@ -59,8 +59,8 @@ class Gateway:
         while True:
             pls = await self.ws.recv()
             print(pls)
-            # Illegal, personal debug use only
             if debug: open('log.txt', 'a+').write(pls+'\n')
+            pl = json.loads(pls)
             op = pl['op']
             if op == 0:
                 ss = json.load(open('session.json'))
