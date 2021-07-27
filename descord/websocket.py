@@ -45,7 +45,7 @@ class Gateway:
     async def identify(self):
         op2 = payload.identify(self.token)
         await self.ws.send(op2)
-        ready = await ws.recv()
+        ready = await self.ws.recv()
         ss_id = payload.data(ready, 'session_id')
         ss = {'session_id': ss_id}
         json.dump(ss, open('session.json', 'w'))
