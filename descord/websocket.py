@@ -55,7 +55,7 @@ class Gateway:
             event = json.loads(await ws.recv())
             if event['op'] == 7:
                 self.hb.stop()
-                await self.bridge(True)
+                await self.async_connect(True)
             elif event['op'] == 11: continue
             if 's' in event: 
                 ss = json.load(open('session.json'))
