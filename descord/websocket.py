@@ -18,8 +18,8 @@ class Heartbeat:
     async def op1(self):
         print('[OP1 STARTED]')
         while self.beat:
-            await self.conn.send(payload.heartbeat())
             await asyncio.sleep(self.intv)
+            await self.conn.send(payload.heartbeat())
         print('[OP1 STOPPED]')
 
     def stop(self): self.beat = False
@@ -44,11 +44,8 @@ class Gateway:
 
     async def identify(self):
         op2 = payload.identify(self.token)
-        print(0)
         await self.ws.send(op2)
-        print(1)
         ready = await self.ws.recv()
-        print(ready)
         ss_id = payload.data(ready, 'session_id')
         ss = {'session_id': ss_id}
         json.dump(ss, open('session.json', 'w'))
