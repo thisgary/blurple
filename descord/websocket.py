@@ -24,7 +24,8 @@ class Gateway:
         def start(self): 
             threading.Thread(target=asyncio.run, args=(self.async_start(),)).start()
 
-        def stop (self): self.alive = False
+        def stop(self):
+            self.alive = False
 
 
     def __init__(self, token, *, version=9):
@@ -50,19 +51,20 @@ class Gateway:
                 await ws.send(payload.resume(self.token, session_id, seq))
             await self.monitor(ws)
 
-    async def monitor(self, ws):
+    async def monitor(self, ws, debug=True):
         while True:
             event = json.loads(await ws.recv())
             if event['op'] == 7:
                 self.hb.stop()
                 await self.async_connect(True)
-            elif event['op'] == 11: continue
+            elif event['op'] == 11:
+                if not debug: continue # Ignoring logging
             if 's' in event: 
                 ss = json.load(open('session.json'))
                 ss['seq'] = event['s']
                 json.dump(ss, open('session.json', 'w'))
             print(event)
-            open('log.txt', 'a+').write(f'{event}\n') # Debugging purpose
+            if debug: open('log.txt', 'a+').write(f'{event}\n') # Debugging purpose
 
     def connect(self):
         asyncio.run(self.async_connect())
