@@ -64,7 +64,7 @@ class Gateway:
             op = pl['op']
             if op == 0:
                 ss = json.load(open('session.json'))
-                ss['seq'] = event['s']
+                ss['seq'] = pl['s']
                 json.dump(ss, open('session.json', 'w'))
             elif op == 7: break
             elif op == 11 and debug: continue
