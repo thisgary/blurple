@@ -11,8 +11,8 @@ __all__ = ['Gateway']
 class Gateway:
     class Heartbeat:
         def __init__(self, interval, connection):
-            self.alive = True
-            self.interval = interval/1000
+            self.alive      = True
+            self.interval   = interval/1000
             self.connection = connection
 
         async def async_start(self):
@@ -21,20 +21,19 @@ class Gateway:
                 await self.connection.send(payload.heartbeat())
             print('Stopped heartbeating')
 
-        def start(self):
+        def start(self): 
             threading.Thread(target=asyncio.run, args=(self.async_start(),)).start()
 
-        def stop(self):
-            self.alive = False
+        def stop (self): self.alive = False
 
 
     def __init__(self, token, *, version=9):
         self.token = token
-        self.uri = f'wss://gateway.discord.gg/?v={version}&encoding=json'
+        self.uri   = f'wss://gateway.discord.gg/?v={version}&encoding=json'
 
     async def async_connect(self, resume=False):
         async with websockets.connect(self.uri) as ws:
-            hello = await ws.recv() # Hello
+            hello   = await ws.recv() # Hello
             hb_intv = payload.data(hello, 'heartbeat_interval')
             self.hb = self.Heartbeat(hb_intv, ws)
             self.hb.start()

@@ -8,8 +8,7 @@ def create(op, **d):
     pl = {'op': op, 'd': d}
     return json.dumps(pl)
 
-def heartbeat():
-    return create(1)
+def heartbeat(): return create(1)
 
 def identify(token):
     prop = {
