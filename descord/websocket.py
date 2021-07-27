@@ -31,7 +31,7 @@ class Gateway:
         self.uri   = f'wss://gateway.discord.gg/?v={version}&encoding=json'
 
     async def connection(self, res=False):
-        with websockets.connect(self.uri) as self.ws:
+        async with websockets.connect(self.uri) as self.ws:
             await self.hello()
             if not res: await self.identify()
             else: await self.resume()
