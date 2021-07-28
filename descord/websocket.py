@@ -57,6 +57,7 @@ class Gateway:
 
     async def monitor(self, debug=True):
         while True:
+            print(f'[BACKGROUND THREAD COUNT: {threading.active_count()-1}]')
             pls = await self.ws.recv()
             print(pls)
             if debug: open('log.txt', 'a+').write(pls+'\n')
@@ -64,7 +65,7 @@ class Gateway:
             op = pl.op()
             if op == 0:
                 ss = json.load(open('session.json'))
-                ss['seq'] = pl['s']
+                ss['seq'] = pl.seq()
                 json.dump(ss, open('session.json', 'w'))
             elif op == 7: break
             elif op == 11 and debug: continue
