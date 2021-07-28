@@ -20,20 +20,15 @@ def resume(token, session_id, seq):
 
 class Read:
     def __init__(self, pl_str): # Payload string
-        self.pl = json.loads(pl_str)
-        self.is_op0 = self.pl['op'] == 0
-
-    def op(self): return self.pl['op']
+        self.str = pl_str
+        self.obj = json.loads(pl_str)
+        self.op  = self.obj['op']
+        self.s   = self.obj['s']
+        self.t   = self.obj['t']
     
-    def data(self, attr=None):
-        d = self.pl['d']
-        if attr: 
+    def d(self, attr=None):
+        d = self.obj['d']
+        if attr:
             if attr in d: return d[attr]
         else: return d
-
-    def seq(self):
-        if self.is_op0: return self.pl['s']
-
-    def name(self):
-        if self.is_op0: return self.pl['t']
 

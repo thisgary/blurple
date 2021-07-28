@@ -39,14 +39,14 @@ class Gateway:
 
     async def hello(self):
         op10 = payload.Read(await self.ws.recv())
-        intv = op10.data('heartbeat_interval')
+        intv = op10.d('heartbeat_interval')
         self.hb = Heartbeat(intv, self.ws)
 
     async def identify(self):
         op2 = payload.identify(self.token)
         await self.ws.send(op2)
         ready = payload.Read(await self.ws.recv())
-        ss_id = ready.data('session_id')
+        ss_id = ready.d('session_id')
         ss = {'session_id': ss_id}
         json.dump(ss, open('session.json', 'w'))
 
@@ -57,19 +57,18 @@ class Gateway:
 
     async def monitor(self, debug=True):
         while True:
-            print(f'[BACKGROUND THREAD COUNT: {threading.active_count()-1}]')
-            pls = await self.ws.recv()
-            print(pls)
-            if debug: open('log.txt', 'a+').write(pls+'\n')
-            pl = payload.Read(pls)
-            op = pl.op()
+            pl = payload.Read(await self.ws.recv())
+            op = pl.op
             if op == 0:
                 ss = json.load(open('session.json'))
-                ss['seq'] = pl.seq()
+                ss['seq'] = pl.s
                 json.dump(ss, open('session.json', 'w'))
             elif op == 7: break
-            elif op == 11 and debug: continue
-        self.hb.stop()
+            elif op == 11 and not debug: continue
+            print(pl.str)
+            if debug: open('log.txt', 'a+').write(pl.str+'\n')
+        print(f'[THREAD COUNT: {threading.active_count()}]')
+        self.hb.stop() # op7 handler
         await self.connection(True)
 
     def connect(self):
