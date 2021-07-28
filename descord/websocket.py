@@ -38,15 +38,15 @@ class Gateway:
             await self.monitor()
 
     async def hello(self):
-        op10 = await self.ws.recv()
-        intv = payload.data(op10, 'heartbeat_interval')
+        op10 = payload.Read(await self.ws.recv())
+        intv = op10.data('heartbeat_interval')
         self.hb = Heartbeat(intv, self.ws)
 
     async def identify(self):
         op2 = payload.identify(self.token)
         await self.ws.send(op2)
-        ready = await self.ws.recv()
-        ss_id = payload.data(ready, 'session_id')
+        ready = payload.Read(await self.ws.recv())
+        ss_id = ready.data('session_id')
         ss = {'session_id': ss_id}
         json.dump(ss, open('session.json', 'w'))
 
@@ -60,8 +60,8 @@ class Gateway:
             pls = await self.ws.recv()
             print(pls)
             if debug: open('log.txt', 'a+').write(pls+'\n')
-            pl = json.loads(pls)
-            op = pl['op']
+            pl = payload.Read(pls)
+            op = pl.op()
             if op == 0:
                 ss = json.load(open('session.json'))
                 ss['seq'] = pl['s']
