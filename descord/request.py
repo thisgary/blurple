@@ -36,10 +36,10 @@ class Request:
     def get_dms   (self): return self.get(dms)
     def get_guilds(self): return self.get(guilds)
 
-    def get_user    (self, usr_id): return self.get(user    (usr_id))
-    def get_guild   (self, gld_id): return self.get(guild   (gld_id))
+    def get_user    (self, usr_id): return self.get(user(usr_id))
+    def get_guild   (self, gld_id): return self.get(guild(gld_id))
     def get_channels(self, gld_id): return self.get(channels(gld_id))
-    def get_channel (self, chn_id): return self.get(channel (chn_id))
+    def get_channel (self, chn_id): return self.get(channel(chn_id))
 
     def get_messages(self, chn_id, hx_obj=None):
         return self.get(messages(chn_id), hx_obj)
@@ -68,4 +68,13 @@ class Request:
         msg_obj = {'content': msg_con}
         msg_obj.update(kwargs)
         return self.post(messages(chn_id), msg_obj)
+    
+    def patch(self, path, json):
+        return requests.post(self.url+path, headers=self.auth, json=json)
+
+    def put(self, path, json):
+        return requests.post(self.url+path, headers=self.auth, json=json)
+    
+    def delete(self, path, json=None): 
+        return requests.get(self.url+path, headers=self.auth, json=json)
 
