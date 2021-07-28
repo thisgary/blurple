@@ -27,7 +27,8 @@ class Read:
     
     def data(self, attr=None):
         d = self.pl['d']
-        if attr and 'attr' in d: return d[attr]
+        if attr: 
+            if attr in d: return d[attr]
         else: return d
 
     def seq(self):
