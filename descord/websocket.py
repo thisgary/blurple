@@ -16,10 +16,11 @@ class Heartbeat:
         threading.Thread(target=asyncio.run, args=(self.op1(),)).start()
 
     async def op1(self):
-        print('[OP1 STARTED]')
+        print('[OP1 START]')
+        await asyncio.sleep(self.intv)
         while self.beat:
-            await asyncio.sleep(self.intv)
             await self.conn.send(payload.heartbeat())
+            await asyncio.sleep(self.intv)
         print('[OP1 STOPPED]')
 
     def stop(self): self.beat = False
@@ -30,7 +31,7 @@ class Gateway:
         self.token = token
         self.uri   = f'wss://gateway.discord.gg/?v={version}&encoding=json'
 
-    async def connection(self, res=False):
+    async def connect(self, res=False):
         async with websockets.connect(self.uri) as self.ws:
             await self.hello()
             if not res: await self.identify()
@@ -51,7 +52,6 @@ class Gateway:
         ss_id = ready.d('session_id')
         ss = {'session_id': ss_id}
         json.dump(ss, open('session.json', 'w'))
-        print('[CLIENT IS READY]')
 
     async def resume(self):
         ss = json.load(open('session.json'))
@@ -73,11 +73,8 @@ class Gateway:
             elif op == 11 and not debug: continue
             print(pl.str)
             if debug: open('log.txt', 'a+').write(pl.str+'\n')
-        self.hb.stop() # op7 handler
-        print(f'[THREAD COUNT: {threading.active_count()}]')
-        print('[OP6 ATTEMPT]')
-        await self.connection(True)
+        self.hb.stop()
+        await self.connect(True)
 
-    def connect(self):
-        asyncio.run(self.connection())
+    def start(self): asyncio.run(self.connect())
 
