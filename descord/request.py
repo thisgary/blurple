@@ -2,71 +2,54 @@ import requests
 
 __all__ = ['Request']
 
-api  = 'https://discord.com/api'
+base_url = 'https://discord.com/api'
 
-usr = '/users'
-gld = '/guilds'
-chn = '/channels'
-msg = '/messages'
+me     = '/users/@me'
+dms    = '/users/@me/channels'
+guilds = '/users/@me/guilds'
+def user(usr_id): return f'/users/{usr_id}'
 
-prv = '/preview'
-mem = '/members'
+def          guild(gld_id): return f'/guilds/{gld_id}'
+def       channels(gld_id): return f'/guilds/{gld_id}/channels'
+def        preview(gld_id): return f'/guilds/{gld_id}/preview'
+def        members(gld_id): return f'/guilds/{gld_id}/members'
+def        mem_src(gld_id): return f'/guilds/{gld_id}/members/search'
+def member(gld_id, usr_id): return f'/guilds/{gld_id}/members/{usr_id}'
 
-src = '/search'
-
-me     = usr + '/@me'
-dms    = me  + chn
-guilds = me  + gld
-
-def user    (usr_id): return f'{usr}/{usr_id}'
-def guild   (gld_id): return f'{gld}/{gld_id}'
-def channel (chn_id): return f'{chn}/{chn_id}'
-
-def channels(gld_id): return guild(gld_id)   + chn
-def preview (gld_id): return guild(gld_id)   + prv
-def members (gld_id): return guild(gld_id)   + mem
-def messages(chn_id): return channel(chn_id) + msg
-
-def mem_src (gld_id): return members(gld_id) + src
-
-def member  (gld_id, usr_id): return members(gld_id) + f'/{usr_id}'
-
-def message (chn_id, msg_id): return messages(chn_id) + f'/{msg_id}'
+def         channel(chn_id): return f'/channels/{chn_id}'
+def        messages(chn_id): return f'/channels/{chn_id}/messages'
+def message(chn_id, msg_id): return f'/channels/{chn_id}/messages/{msg_id}'
 
 
 class Request:
-    def __init__(self, token, *, bot=True, version=9):
-        self.url  = f'{api}/v{version}'
+    def __init__(self, access_token, *, is_bot=True, api_version=9):
+        self.url  = f'{base_url}/v{api_version}'
         prefix    = 'Bot' if bot else 'Bearer'
         self.auth = {'Authorization': f'{prefix} {token.strip()}'} 
 
     def get(self, path, params=None): 
         return requests.get(self.url+path, headers=self.auth, params=params)
 
-    def me_get    (self): return self.get(me)
-    def dms_get   (self): return self.get(dms)
+    def     me_get(self): return self.get(me)
+    def    dms_get(self): return self.get(dms)
     def guilds_get(self): return self.get(guilds)
 
-    def user_get    (self, usr_id): return self.get(user(usr_id))
-    def guild_get   (self, gld_id): return self.get(guild(gld_id))
+    def     user_get(self, usr_id): return self.get(user(usr_id))
+    def    guild_get(self, gld_id): return self.get(guild(gld_id))
     def channels_get(self, gld_id): return self.get(channels(gld_id))
-    def channel_get (self, chn_id): return self.get(channel(chn_id))
+    def  channel_get(self, chn_id): return self.get(channel(chn_id))
 
-    def members_get(self, gld_id, **mem_ls_obj): # Require intent
-        return self.get(members (gld_id), mem_ls_obj)
+    def  member_get(self, gld_id, usr_id): return self.get(member(gld_id, usr_id))
+    def message_get(self, chn_id, msg_id): return self.get(message(chn_id, msg_id))
+
+    def members_get(self, gld_id, **mem_ls_obj):
+        return self.get(members(gld_id), mem_ls_obj)
 
     def messages_get(self, chn_id, **msg_hx_obj):
         return self.get(messages(chn_id), msg_hx_obj)
 
-    def members_search(self, gld_id, **mem_src_obj):
-        return self.get(mem_src (gld_id), mem_src_obj)
-
-
-    def member_get (self, gld_id, usr_id): 
-        return self.get(member(gld_id, usr_id))
-
-    def message_get(self, chn_id, msg_id): 
-        return self.get(message(chn_id, msg_id))
+    def members_search(self, gld_id, **mem_srch_obj):
+        return self.get(mem_src(gld_id), mem_srch_obj)
 
     def post(self, path, json):
         return requests.post(self.url+path, headers=self.auth, json=json)
