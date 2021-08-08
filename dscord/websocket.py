@@ -3,7 +3,7 @@ import asyncio
 import requests
 import threading
 import websockets
-import .payload
+from dscord import payload
 
 __all__ = ['Gateway']
 
