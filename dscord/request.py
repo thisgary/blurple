@@ -25,7 +25,7 @@ class Request:
     def __init__(self, access_token, *, is_bot=True, api_version=9):
         self.url  = f'{base_url}/v{api_version}'
         prefix    = 'Bot' if is_bot else 'Bearer'
-        self.auth = {'Authorization': f'{prefix} {token.strip()}'} 
+        self.auth = {'Authorization': f'{prefix} {access_token.strip()}'} 
 
     def get(self, path, params=None): 
         return requests.get(self.url+path, headers=self.auth, params=params)
