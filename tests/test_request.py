@@ -1,7 +1,7 @@
 import os
-import descord
+import dscord
 
-bot = descord.Request(os.environ['TOKEN'])
+bot = dscord.Request(os.environ['TOKEN'])
 
 def test_message_create():
     bot.message_create(os.environ['CHANNEL'], '`[TEST MESSAGE]`')

@@ -1,14 +1,24 @@
-from setuptools import setup
+import setuptools
 
-setup(
-        name='Descord2',
-        packages=['descord'],
-        version='0.4-3-g484898e',
-        description='Discord API wrapper for learning purpose.',
+setuptools.setup(
+        name='Dscord 2',
+        version='0.4',
         author='thisgary',
+        author_email='gary.github@gmail.com',
+        description='Yet another Discord API wrapper.',
+        long_description=open('README.md').read(),
+        long_description_content_type='text/markdown',
+        packages=setuptools.find_packages(),
+        classifiers=[
+            'Programming Language :: Python :: 3',
+            'License :: OSI Approved :: MIT Lisence',
+            'Operating System :: OS Independent',
+        ],
         license='MIT',
-        install_requires=['requests','websockets'],
+        python_requires='>=3.7',
+        install_requires=['requests', 'websockets'],
         setup_requires=['pytest_runner'],
-        test_require=['pytest'],
-        test_suite='tests')
+        tests_require=['pytest'],
+        test_suite='tests',
+)
 

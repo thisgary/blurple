@@ -3,7 +3,7 @@ import asyncio
 import requests
 import threading
 import websockets
-from descord import payload
+import .payload
 
 __all__ = ['Gateway']
 
@@ -62,17 +62,17 @@ class Gateway:
     async def monitor(self, debug=True):
         while True:
             pl = payload.Read(await self.ws.recv())
-            op = pl.op
+            op = pl['op']
             if op == 0:
                 ss = json.load(open('session.json'))
-                ss['seq'] = pl.s
+                ss['seq'] = pl['s']
                 json.dump(ss, open('session.json', 'w'))
             elif op == 7: 
                 print('[OP7 RECEIVED]')
                 break
             elif op == 11 and not debug: continue
-            print(pl.str)
-            if debug: open('log.txt', 'a+').write(pl.str+'\n')
+            print(pl.obj)
+            if debug: open('log.txt', 'a+').write(f'{pl.obj}\n')
         self.hb.stop()
         await self.connect(True)
 
