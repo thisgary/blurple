@@ -10,5 +10,5 @@ def test_message_create():
     bot.message_create(CHANNEL, '`[TEST MESSAGE]`')
 
 def test_message_create_embed():
-    embed = dscord.Embed(title='TEST', color=0xff5a00)
-    bot.message_create(CHANNEL, '`[TEST EMBED]`', embed=embed.__dict__)
+    embed = dscord.Embed(title='TEST', color=0xff5a00).__dict__
+    bot.message_create(CHANNEL, '`[TEST EMBED]`', embeds=[embed, embed])
