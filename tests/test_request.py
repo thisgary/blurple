@@ -9,6 +9,6 @@ bot = dscord.Request(TOKEN)
 def test_message_create():
     bot.message_create(CHANNEL, '`[TEST MESSAGE]`')
 
-def test_embed_message():
-    embed = dscord.Embed(title='TEST')
+def test_message_create_embed():
+    embed = dscord.Embed(title='TEST', color=0xff5a00)
     bot.message_create(CHANNEL, '`[TEST EMBED]`', embed=embed)

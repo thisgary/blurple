@@ -18,19 +18,19 @@ class Embed:
             if inline: self.inline = inline
 
     def __init__(self, *, 
-            title=None:str, 
-            embed_type=None:str,
-            description=None:str,
-            url=None:str,
+            title=None, # str
+            embed_type=None, # str
+            description=None, # str
+            url=None, # str
             timestamp=None, # ISO8601 timestamp
-            color=None:int,
-            footer=None:Footer,
-            image=None:Image,
-            thumbnail=None:Thumbnail,
-            video=None:Video,
-            provider=None:Provider,
-            author=None:Author,
-            fields=None:list):
+            color=None, # int
+            footer=None,
+            image=None,
+            thumbnail=None,
+            video=None,
+            provider=None,
+            author=None,
+            fields=None): # list
         self.title = title
         self.type = embed_type
         self.description = description
