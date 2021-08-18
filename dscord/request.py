@@ -23,4 +23,4 @@ class Request:
         return self.get(f'/channels/{channel_id}', history_object)
     
     def post_message(self, channel_id: int, message_object: dict):
-        return self.post(f'/channels/{chn_id}/messages', message_object)
+        return self.post(f'/channels/{channel_id}/messages', message_object)
