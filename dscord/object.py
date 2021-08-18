@@ -1,36 +1,36 @@
+from typing import List
+
+
 class Embed:
     class Footer: pass
-
     class Image: pass
-
     class Thumbnail: pass
-
     class Video: pass
-
     class Provider: pass
-
     class Author: pass
 
+
     class Field:
-        def __init__(self, name, value, inline=None):
+        def __init__(self, name: str, value: str, inline: bool = None):
             self.name = name
             self.value = value
-            if inline: self.inline = inline
+            self.inline = inline
+
 
     def __init__(self, *, 
-            title=None, # str
-            embed_type=None, # str
-            description=None, # str
-            url=None, # str
-            timestamp=None, # ISO8601 timestamp
-            color=None, # int
-            footer=None,
-            image=None,
-            thumbnail=None,
-            video=None,
-            provider=None,
-            author=None,
-            fields=None): # list
+            title: str = None,
+            type: str = None,
+            description: str = None,
+            url: str = None,
+            timestamp = None,
+            color: int = None,
+            footer = None,
+            image = None,
+            thumbnail = None,
+            video = None,
+            provider = None,
+            author = None,
+            fields: List[dict] = None):
         self.title = title
         self.type = embed_type
         self.description = description
@@ -45,3 +45,8 @@ class Embed:
         self.author = author
         self.fields = fields
 
+class Message:
+    def __init__(self, content: str, *,
+            embeds: List[dict] = None):
+        self.content = content
+        self.embeds = embeds
