@@ -31,7 +31,7 @@ class Gateway:
     def __init__(self, access_token: str, *, api_version: int = 9):
         self.token = access_token
         self.uri   = f'wss://gateway.discord.gg/?v={api_version}&encoding=json'
-        self.active, self.resume = True, False
+        self.active, self.resuming = True, False
         self.events = []
 
     def event(f):
@@ -43,8 +43,7 @@ class Gateway:
             op10 = json.loads(await self.ws.recv())
             interval = op10['d']['heartbeat_interval']
             self.hb = Heartbeat(interval, self.ws)
-            if self.resume: await self.resume()
-            else: await self.identify()
+            await self.resume() if self.resuming else await self.identify()
             await self.monitor()
  
     async def resume(self):
@@ -78,10 +77,10 @@ class Gateway:
                 json.dump(session, open('session.json', 'w'))
                 await self.handle(payload)
             elif op == 7:
-                self.resume = True
+                self.resuming = True
                 break
             elif op == 9:
-                self.resume = False
+                self.resuming = False
                 break
         self.hb.stop()
 
