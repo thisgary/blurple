@@ -5,11 +5,12 @@ TOKEN = os.environ['TOKEN']
 CHANNEL = os.environ['CHANNEL']
 
 bot = dscord.Request(TOKEN)
-message = dscord.Message('`[TEST MESSAGE]`')
 
 def test_send_message():
-    bot.post_message(CHANNEL, message.__dict__)
+    message = dscord.Message('`[TEST MESSAGE]`')
+    bot.post_message(CHANNEL, vars(message))
 
-    embed = dscord.Embed(title='TEST', color=0xff5a00).__dict__
+    message.content = '`[TEST EMBED]`'
+    embed = vars(dscord.Embed(title='TEST', color=0xff5a00))
     message.embeds = [embed, embed]
-    bot.post_message(CHANNEL, '`[TEST EMBED]`', message.__dict__)
+    bot.post_message(CHANNEL, vars(message))
