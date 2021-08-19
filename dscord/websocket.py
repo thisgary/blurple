@@ -51,8 +51,9 @@ class Gateway:
         properties = {
                 '$os': 'linux',
                 '$browser': 'IE',
-                '$device': 'Nokia-3310'}
-        op2 = dscord.Payload(2, token=self.token, intents=32509, properties=properties)
+                '$device': 'ta-1077'}
+        op2 = dscord.Payload(2, token=self.token, 
+                intents=32509, properties=properties)
         await self.ws.send(op2.json())
         READY = json.loads(await self.ws.recv())
         session = {'session_id': READY['d']['session_id']}
@@ -63,7 +64,7 @@ class Gateway:
             payload = json.loads(await self.ws.recv())
             if debug:
                 print(payload)
-                open('dscord.log', 'a+').write(f'{payload}\n')            
+                open('dscord.log', 'a+').write(f'{payload}\n') 
             op = payload['op']
             if op == 0:
                 session = json.load(open('session.json'))
