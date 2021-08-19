@@ -9,20 +9,20 @@ __all__ = ['Gateway']
 
 
 class Heartbeat:
-    def __init__(self, intervals: int, connection):
-        self.beat = True
-        self.intv = intervals/1000
+    def __init__(self, interval: int, connection):
+        self.intv = interval/1000
         self.conn = connection
         threading.Thread(target=asyncio.run, args=(self.start(),)).start()
+        self.active = True
 
     async def start(self):
         await asyncio.sleep(self.intv)
-        while self.beat:
+        while self.active:
             await self.conn.send(payload.heartbeat())
             await asyncio.sleep(self.intv)
 
     def stop(self):
-        self.beat = False
+        self.active = False
 
 
 class Gateway:
@@ -34,10 +34,10 @@ class Gateway:
     async def connect(self):
         async with websockets.connect(self.uri) as self.ws:
             op10 = payload.Read(await self.ws.recv())
-            inertvals = op10.d('heartbeat_interval')
-            self.hb = Heartbeat(intervals, self.ws)
-            try: self.resume()
-            except: self.identify()
+            interval = op10.d('heartbeat_interval')
+            self.hb = Heartbeat(interval, self.ws)
+            try: await self.resume()
+            except: await self.identify()
             await self.monitor()
         
     async def resume(self):
@@ -57,10 +57,10 @@ class Gateway:
             pl = payload.Read(await self.ws.recv())
             if debug:
                 open('dscord.log', 'a+').write(f'{pl.obj}\n')
-            op = pl['op']
+            op = pl.obj['op']
             if op == 0:
                 session = json.load(open('session.json'))
-                session['seq'] = pl['s']
+                session['seq'] = pl.obj['s']
                 json.dump(session, open('session.json', 'w'))
             elif op == 7: break
         self.hb.stop()
