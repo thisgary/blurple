@@ -12,4 +12,4 @@ def test_send_message():
 
     embed = dscord.Embed(title='TEST', color=0xff5a00).__dict__
     message.embeds = [embed, embed]
-    bot.send_message(CHANNEL, '`[TEST EMBED]`', message.__dict__)
+    bot.post_message(CHANNEL, '`[TEST EMBED]`', message.__dict__)
