@@ -1,3 +1,4 @@
+import json
 from typing import List
 
 
@@ -45,3 +46,12 @@ class History:
         self.around = around
         self.before = before
         self.after = after
+
+
+class Payload:
+    def __init__(self, op: int, **d):
+        self.op = op
+        self.d = d
+
+    def json(self) -> str:
+        return json.dumps(self.__dict__)
