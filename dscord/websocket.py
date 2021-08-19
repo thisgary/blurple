@@ -32,16 +32,21 @@ class Gateway:
         self.token = access_token
         self.uri   = f'wss://gateway.discord.gg/?v={api_version}&encoding=json'
         self.active, self.resume = True, False
+        self.events = []
 
-    async def connect(self, debug: bool):
+    def event(f):
+        self.events.append(f)
+        return f
+
+    async def connect(self):
         async with websockets.connect(self.uri) as self.ws:
             op10 = json.loads(await self.ws.recv())
             interval = op10['d']['heartbeat_interval']
             self.hb = Heartbeat(interval, self.ws)
             if self.resume: await self.resume()
             else: await self.identify()
-            await self.monitor(debug)
-        
+            await self.monitor()
+ 
     async def resume(self):
         session = json.load(open('session.json'))
         op6 = dscord.Payload(6, token=self.token, 
@@ -60,10 +65,10 @@ class Gateway:
         session = {'session_id': READY['d']['session_id']}
         json.dump(session, open('session.json', 'w'))
 
-    async def monitor(self, debug: bool):
+    async def monitor(self):
         while self.active:
             payload = json.loads(await self.ws.recv())
-            if debug:
+            if self.debug:
                 print(payload)
                 open('dscord.log', 'a+').write(f'{payload}\n') 
             op = payload['op']
@@ -71,6 +76,7 @@ class Gateway:
                 session = json.load(open('session.json'))
                 session['seq'] = payload['s']
                 json.dump(session, open('session.json', 'w'))
+                await self.handle(payload)
             elif op == 7:
                 self.resume = True
                 break
@@ -79,9 +85,19 @@ class Gateway:
                 break
         self.hb.stop()
 
+    async def handle(payload: dict):
+        for event in self.events:
+            try:
+                event(payload)
+            except Exception as e:
+                print(e)
+                if self.debug:
+                    open('error.log', 'w').write(e+'\n')
+
     def start(self, *, debug: bool = False):
+        self.debug = debug
         while self.active:
-            asyncio.run(self.connect(debug))
+            asyncio.run(self.connect())
         os.remove('session.json')
 
     def stop(self):
