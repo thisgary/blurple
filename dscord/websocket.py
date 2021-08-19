@@ -85,7 +85,7 @@ class Gateway:
                 break
         self.hb.stop()
 
-    async def handle(payload: dict):
+    async def handle(self, payload: dict):
         for event in self.events:
             try:
                 event(payload)
