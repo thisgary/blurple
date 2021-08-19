@@ -38,7 +38,8 @@ class Gateway:
             op10 = json.loads(await self.ws.recv())
             interval = op10['d']['heartbeat_interval']
             self.hb = Heartbeat(interval, self.ws)
-            await self.resume() if self.resume else await self.identify()
+            if self.resume: await self.resume()
+            else: await self.identify()
             await self.monitor(debug)
         
     async def resume(self):
