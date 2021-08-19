@@ -2,6 +2,7 @@ import json
 import asyncio
 import requests
 import threading
+from typing import Callable
 
 import dscord
 import websockets
@@ -34,7 +35,7 @@ class Gateway:
         self.active, self.resuming = True, False
         self.events = []
 
-    def event(f):
+    def event(self, f: Callable) -> Callable:
         self.events.append(f)
         return f
 
