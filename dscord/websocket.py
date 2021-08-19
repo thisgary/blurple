@@ -62,7 +62,7 @@ class Gateway:
         while self.active:
             payload = json.loads(await self.ws.recv())
             if debug:
-                print(debug)
+                print(payload)
                 open('dscord.log', 'a+').write(f'{payload}\n')            
             op = payload['op']
             if op == 0:
