@@ -33,7 +33,7 @@ class Gateway:
     def __init__(self, access_token: str, *, api_version: int = 9):
         self.token = access_token
         self.uri   = f'wss://gateway.discord.gg/?v={api_version}&encoding=json'
-        self.active = self.fresh = True
+        self.active = True
         self.events = []
 
     def event(self, f: Callable) -> Callable:
@@ -45,9 +45,8 @@ class Gateway:
             op10 = json.loads(await self.ws.recv())
             interval = op10['d']['heartbeat_interval']
             self.hb = Heartbeat(interval, self.ws)
-            while self.active:
-                await (self.identify() if self.fresh else self.resume())
-                await self.monitor()
+            await self.identify()
+            await self.monitor()
  
     async def resume(self):
         sesh = json.load(open('session.json'))
@@ -80,13 +79,10 @@ class Gateway:
                 json.dump(sesh, open('session.json', 'w'))
                 await self.handle(payload)
             elif op == 7:
-                self.fresh = False
-                break
+                await self.resume()
             elif op == 9:
-                self.fresh = True
                 await asyncio.sleep(3)
-                break
-        self.hb.stop()
+                await self.identify()
 
     async def handle(self, payload: dict):
         for event in self.events:
@@ -97,7 +93,9 @@ class Gateway:
         self.debug = debug
         while self.active:
             try: asyncio.run(self.connect())
-            except Exception as e: print(e)
+            except Exception as e:
+                print(e)
+                self.hb.stop()
         os.remove('session.json')
 
     def stop(self):
