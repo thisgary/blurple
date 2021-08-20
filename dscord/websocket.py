@@ -6,6 +6,7 @@ from typing import Callable
 
 import dscord
 import websockets
+from websockets.exceptions import ConnectionClosedError
 
 __all__ = ['Gateway']
 
@@ -46,7 +47,8 @@ class Gateway:
             self.hb = Heartbeat(interval, self.ws)
             while self.active:
                 await (self.identify() if self.fresh else self.resume())
-                await self.monitor()
+                try: await self.monitor()
+                except ConnectionClosedError as e: print(e)
  
     async def resume(self):
         sesh = json.load(open('session.json'))
