@@ -32,7 +32,7 @@ class Gateway:
     def __init__(self, access_token: str, *, api_version: int = 9):
         self.token = access_token
         self.uri   = f'wss://gateway.discord.gg/?v={api_version}&encoding=json'
-        self.active, self.resuming = True, False
+        self.active = self.fresh = True
         self.events = []
 
     def event(self, f: Callable) -> Callable:
@@ -44,13 +44,14 @@ class Gateway:
             op10 = json.loads(await self.ws.recv())
             interval = op10['d']['heartbeat_interval']
             self.hb = Heartbeat(interval, self.ws)
-            await self.resume() if self.resuming else await self.identify()
-            await self.monitor()
+            while self.active:
+                await (self.identify() if self.fresh else self.resume())
+                await self.monitor()
  
     async def resume(self):
-        session = json.load(open('session.json'))
+        sesh = json.load(open('session.json'))
         op6 = dscord.Payload(6, token=self.token, 
-                session_id=session['session_id'], seq=session['seq'])
+                session_id=sesh['id'], seq=sesh['s'])
         await self.ws.send(op6.json())
 
     async def identify(self):
@@ -62,8 +63,8 @@ class Gateway:
                 intents=32509, properties=properties)
         await self.ws.send(op2.json())
         READY = json.loads(await self.ws.recv())
-        session = {'session_id': READY['d']['session_id']}
-        json.dump(session, open('session.json', 'w'))
+        sesh = {'id': READY['d']['session_id']}
+        json.dump(sesh, open('session.json', 'w'))
 
     async def monitor(self):
         while self.active:
@@ -73,15 +74,16 @@ class Gateway:
                 open('dscord.log', 'a+').write(f'{payload}\n') 
             op = payload['op']
             if op == 0:
-                session = json.load(open('session.json'))
-                session['seq'] = payload['s']
+                sesh = json.load(open('session.json'))
+                sesh['s'] = payload['s']
                 json.dump(session, open('session.json', 'w'))
                 await self.handle(payload)
             elif op == 7:
-                self.resuming = True
+                self.fresh = False
                 break
             elif op == 9:
-                self.resuming = False
+                self.fresh = True
+                await asyncio.sleep(3)
                 break
         self.hb.stop()
 
@@ -96,8 +98,7 @@ class Gateway:
 
     def start(self, *, debug: bool = False):
         self.debug = debug
-        while self.active:
-            asyncio.run(self.connect())
+        asyncio.run(self.connect())
         os.remove('session.json')
 
     def stop(self):
