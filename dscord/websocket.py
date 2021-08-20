@@ -76,7 +76,7 @@ class Gateway:
             if op == 0:
                 sesh = json.load(open('session.json'))
                 sesh['s'] = payload['s']
-                json.dump(session, open('session.json', 'w'))
+                json.dump(sesh, open('session.json', 'w'))
                 await self.handle(payload)
             elif op == 7:
                 self.fresh = False
