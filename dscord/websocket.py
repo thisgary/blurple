@@ -6,7 +6,6 @@ from typing import Callable
 
 import dscord
 import websockets
-from websockets.exceptions import ConnectionClosedError
 
 __all__ = ['Gateway']
 
@@ -93,9 +92,8 @@ class Gateway:
         self.debug = debug
         while self.active:
             try: asyncio.run(self.connect())
-            except Exception as e:
-                print(e)
-                self.hb.stop()
+            except Exception as e: print(e)
+            self.hb.stop()
         os.remove('session.json')
 
     def stop(self):
