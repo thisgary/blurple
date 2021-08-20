@@ -55,3 +55,7 @@ class Payload:
 
     def json(self) -> str:
         return json.dumps(self.__dict__)
+
+    def read(self, payload: str):
+        payload = json.loads(payload)
+        self.__dict__.update(payload)
