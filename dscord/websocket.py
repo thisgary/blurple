@@ -96,7 +96,7 @@ class Gateway:
             except Exception as e:
                 print(e)
                 if self.debug:
-                    open('error.log', 'w').write(e+'\n')
+                    open('error.log', 'w').write(f'{e}\n')
 
     def start(self, *, debug: bool = False):
         self.debug = debug
