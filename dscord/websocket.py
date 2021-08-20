@@ -47,8 +47,7 @@ class Gateway:
             self.hb = Heartbeat(interval, self.ws)
             while self.active:
                 await (self.identify() if self.fresh else self.resume())
-                try: await self.monitor()
-                except ConnectionClosedError as e: print(e)
+                await self.monitor()
  
     async def resume(self):
         sesh = json.load(open('session.json'))
@@ -91,16 +90,14 @@ class Gateway:
 
     async def handle(self, payload: dict):
         for event in self.events:
-            try:
-                event(payload)
-            except Exception as e:
-                print(e)
-                if self.debug:
-                    open('error.log', 'w').write(f'{e}\n')
+            try: event(payload)
+            except Exception as e: print(e)
 
     def start(self, *, debug: bool = False):
         self.debug = debug
-        asyncio.run(self.connect())
+        while self.active:
+            try: asyncio.run(self.connect())
+            except Exception as e: print(e)
         os.remove('session.json')
 
     def stop(self):
