@@ -21,7 +21,7 @@ class Heartbeat:
         op1 = dscord.Payload(1)
         await asyncio.sleep(self.interval)
         while self.active:
-            await self.connection.send(op1. import isfunction, iscoroutinefunctionjson())
+            await self.connection.send(op1.json())
             await asyncio.sleep(self.interval)
 
     def stop(self):
