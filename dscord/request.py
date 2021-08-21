@@ -16,8 +16,14 @@ class Request:
     def get_guilds(self):
         return self.get('/users/@me/guilds')
 
+    def get_guild(self, guild_id: int):
+        return self.get(f'/guilds/{guild_id}')
+
     def get_channels(self, guild_id: int):
         return self.get(f'/guilds/{guild_id}/channels')
+
+    def get_channel(self, channel_id: int):
+        return self.get(f'/channels/{channel_id}')
 
     def get_messages(self, channel_id: int, history_object: dict):
         return self.get(f'/channels/{channel_id}', history_object)
