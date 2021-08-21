@@ -85,7 +85,7 @@ class Gateway:
                 await asyncio.sleep(3)
                 await self.identify()
 
-    async def handle(self, payload: dscord.object.Payload):
+    async def handle(self, payload):
         for event in self.events:
             try: 
                 if inspect.iscoroutinefunction(event):
