@@ -87,11 +87,11 @@ class Gateway:
 
     async def handle(self, payload):
         for event in self.events:
-            try: 
+            #try: 
                 if inspect.iscoroutinefunction(event):
                     await event(payload)
                 else: event(payload)
-            except Exception as e: print(e)
+            #except Exception as e: print(e)
 
     def start(self, *, debug: bool = False):
         self.debug = debug
