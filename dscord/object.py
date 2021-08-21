@@ -49,7 +49,7 @@ class History:
 
 
 class Payload:
-    def __init__(self, op: int, **d):
+    def __init__(self, op: int = None, **d):
         self.op = op
         self.d = d
 
