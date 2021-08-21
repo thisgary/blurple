@@ -1,6 +1,6 @@
-import json
 import asyncio
-import requests
+import inspect
+import json
 import threading
 from typing import Callable
 
@@ -21,7 +21,7 @@ class Heartbeat:
         op1 = dscord.Payload(1)
         await asyncio.sleep(self.interval)
         while self.active:
-            await self.connection.send(op1.json())
+            await self.connection.send(op1. import isfunction, iscoroutinefunctionjson())
             await asyncio.sleep(self.interval)
 
     def stop(self):
@@ -36,7 +36,8 @@ class Gateway:
         self.events = []
 
     def event(self, f: Callable) -> Callable:
-        self.events.append(f)
+        if inspect.isfunction(f):
+            self.events.append(f)
         return f
 
     async def connect(self):
@@ -76,16 +77,19 @@ class Gateway:
                 sesh = json.load(open('session.json'))
                 sesh['s'] = payload['s']
                 json.dump(sesh, open('session.json', 'w'))
-                await self.handle(payload)
             elif op == 7:
                 await self.resume()
             elif op == 9:
                 await asyncio.sleep(3)
                 await self.identify()
+            await self.handle(payload)
 
     async def handle(self, payload: dict):
         for event in self.events:
-            try: event(payload)
+            try: 
+                if inspect.iscoroutinefunction(event):
+                    await event(payload)
+                else: event(payload)
             except Exception as e: print(e)
 
     def start(self, *, debug: bool = False):
