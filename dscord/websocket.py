@@ -47,7 +47,8 @@ class Gateway:
             interval = op10['d']['heartbeat_interval']
             self.hb = Heartbeat(interval, self.ws)
             await self.identify()
-            await self.monitor()
+            threading.Thread(target=self.monitor).start()
+            while self.active: pass
  
     async def resume(self):
         sesh = json.load(open('session.json'))
@@ -68,7 +69,7 @@ class Gateway:
         json.dump(sesh, open('session.json', 'w'))
 
     async def monitor(self):
-        while self.active:
+        while True:
             payload = json.loads(await self.ws.recv())
             if self.debug:
                 print(payload)
