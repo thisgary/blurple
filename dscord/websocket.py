@@ -103,8 +103,11 @@ class Gateway:
         while self.active:
             try: asyncio.run(self.connect())
             except Exception as e: print(e)
+            print('test')
             self.hb.stop()
+            print('welp')
         os.remove('session.json')
+        print('speed')
 
     def stop(self):
         self.active = False
