@@ -47,7 +47,7 @@ class Gateway:
             interval = op10['d']['heartbeat_interval']
             self.hb = Heartbeat(interval, self.ws)
             await self.identify()
-            threading.Thread(target=asyncio.run, args=(self.monitor(),).start()
+            threading.Thread(target=asyncio.run, args=(self.monitor(),)).start()
             while self.active: pass
  
     async def resume(self):
