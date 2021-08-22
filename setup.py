@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
         name='Dscord 2',
-        version='0.7.28',
+        version='0.7.29',
         author='thisgary',
         author_email='gary.github@gmail.com',
         description='Yet another Discord API wrapper.',
