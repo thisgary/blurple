@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import json
+import os
 import threading
 from typing import Callable
 
@@ -71,20 +72,21 @@ class Gateway:
             payload = json.loads(await self.ws.recv())
             if self.debug:
                 print(payload)
-                open('dscord.log', 'a+').write(f'{payload}\n') 
-            op = payload['op']
-            if op == 0:
+                open('dscord.log', 'a+').write(f'{payload}\n')
+            p = dscord.Payload()
+            p.read(payload)
+            if p.op == 0:
                 sesh = json.load(open('session.json'))
-                sesh['s'] = payload['s']
+                sesh['s'] = p.s
                 json.dump(sesh, open('session.json', 'w'))
-            elif op == 7:
+                await self.handle(p)
+            elif p.op == 7:
                 await self.resume()
-            elif op == 9:
+            elif p.op == 9:
                 await asyncio.sleep(3)
                 await self.identify()
-            await self.handle(payload)
 
-    async def handle(self, payload: dict):
+    async def handle(self, payload):
         for event in self.events:
             try: 
                 if inspect.iscoroutinefunction(event):

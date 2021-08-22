@@ -49,13 +49,16 @@ class History:
 
 
 class Payload:
-    def __init__(self, op: int, **d):
+    def __init__(self, op: int = None, **d):
         self.op = op
         self.d = d
 
     def json(self) -> str:
         return json.dumps(self.__dict__)
 
-    def read(self, payload: str):
+    def read(self, p: dict):
+        self.__dict__.update(p)
+
+    def reads(self, payload: str):
         payload = json.loads(payload)
         self.__dict__.update(payload)
