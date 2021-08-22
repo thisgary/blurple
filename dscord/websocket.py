@@ -48,7 +48,7 @@ class Gateway:
             self.hb = Heartbeat(interval, self.ws)
             await self.identify()
             task = asyncio.create_task(self.monitor())
-            while self.active: pass
+            while self.active: await asyncio.sleep(1)
  
     async def resume(self):
         sesh = json.load(open('session.json'))
