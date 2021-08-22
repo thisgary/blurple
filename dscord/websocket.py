@@ -7,6 +7,7 @@ from typing import Callable
 
 import dscord
 import websockets
+from websockets.exceptions import ConnectionClosedOK
 
 __all__ = ['Gateway']
 
@@ -47,7 +48,7 @@ class Gateway:
             interval = op10['d']['heartbeat_interval']
             self.hb = Heartbeat(interval, self.ws)
             await self.identify()
-            task = asyncio.create_task(self.monitor())
+            asyncio.create_task(self.monitor())
             while self.active: await asyncio.sleep(1)
  
     async def resume(self):
@@ -69,23 +70,25 @@ class Gateway:
         json.dump(sesh, open('session.json', 'w'))
 
     async def monitor(self):
-        while True:
-            payload = json.loads(await self.ws.recv())
-            if self.debug:
-                print(payload)
-                open('dscord.log', 'a+').write(f'{payload}\n')
-            p = dscord.Payload()
-            p.read(payload)
-            if p.op == 0:
-                sesh = json.load(open('session.json'))
-                sesh['s'] = p.s
-                json.dump(sesh, open('session.json', 'w'))
-                await self.handle(p)
-            elif p.op == 7:
-                await self.resume()
-            elif p.op == 9:
-                await asyncio.sleep(3)
-                await self.identify()
+        try:
+            while True:
+                payload = json.loads(await self.ws.recv())
+                if self.debug:
+                    print(payload)
+                    open('dscord.log', 'a+').write(f'{payload}\n')
+                p = dscord.Payload()
+                p.read(payload)
+                if p.op == 0:
+                    sesh = json.load(open('session.json'))
+                    sesh['s'] = p.s
+                    json.dump(sesh, open('session.json', 'w'))
+                    await self.handle(p)
+                elif p.op == 7:
+                    await self.resume()
+                elif p.op == 9:
+                    await asyncio.sleep(3)
+                    await self.identify()
+        except ConnectionClosedOK: print('Disconnected!')
 
     async def handle(self, payload):
         for event in self.events:
