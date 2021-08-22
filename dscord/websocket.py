@@ -23,36 +23,34 @@ class Gateway:
             self.events.append(f)
         return f
  
-    async def connect(self):
+    async def connect(self) -> None:
         async with websockets.connect(self.uri) as self.ws:
             op10 = json.loads(await self.ws.recv())
-            intv = op10['d']['heartbeat_interval']
-            task = await asyncio.gather(
-                    self.heartbeat(intv),
-                    self.monitor()
-                    )
+            self.i = op10['d']['heartbeat_interval']
+            self.h = asyncio.create_task(self.heartbeat())
+            self.m = asyncio.create_task(self.monitor())
+            await asyncio.gather(self.h, self.m)
 
-    async def heartbeat(self, interval: int):
-        hb, i = dscord.Payload(1).json(), interval//1000
+    async def heartbeat(self) -> None:
+        op1 = dscord.Payload(1).json()
+        i = self.i // 1000
         while True:
             await asyncio.sleep(i)
-            await self.ws.send(hb)
+            await self.ws.send(op1)
 
     async def identify(self):
         prop = {
                 '$os': 'linux',
                 '$browser': 'IE',
                 '$device': 'ta-1077'
-                }
+        }
         op2 = dscord.Payload(2, 
                 token=self.token, 
                 intents=32509, 
                 properties=prop).json()
         await self.ws.send(op2)
         op0 = json.loads(await self.ws.recv())
-        sesh = {
-                'id': op0['d']['session_id']
-                }
+        sesh = { 'id': op0['d']['session_id'] }
         json.dump(sesh, open('session.json', 'w'))
 
     async def resume(self):
@@ -102,4 +100,6 @@ class Gateway:
         os.remove('session.json')
 
     def stop(self):
+        self.h.cancel()
+        self.m.cancel()
         self.active = False
