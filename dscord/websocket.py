@@ -12,65 +12,60 @@ from websockets.exceptions import ConnectionClosedOK
 __all__ = ['Gateway']
 
 
-class Heartbeat:
-    def __init__(self, interval: int, connection):
-        self.interval = interval/1000
-        self.connection = connection
-        self.active = True
-        threading.Thread(target=asyncio.run, args=(self.start(),)).start()
-
-    async def start(self):
-        op1 = dscord.Payload(1)
-        await asyncio.sleep(self.interval)
-        while self.active:
-            await self.connection.send(op1.json())
-            await asyncio.sleep(self.interval)
-
-    def stop(self):
-        self.active = False
-
-
 class Gateway:
-    def __init__(self, access_token: str, *, api_version: int = 9):
+    def __init__(self, access_token: str, *, v: int = 9):
         self.token = access_token
-        self.uri   = f'wss://gateway.discord.gg/?v={api_version}&encoding=json'
-        self.active = True
-        self.events = []
+        self.uri = f'wss://gateway.discord.gg/?v={v}&encoding=json'
+        self.active, self.events = True, []
 
     def event(self, f: Callable) -> Callable:
         if inspect.isfunction(f):
             self.events.append(f)
         return f
-
+ 
     async def connect(self):
         async with websockets.connect(self.uri) as self.ws:
             op10 = json.loads(await self.ws.recv())
-            interval = op10['d']['heartbeat_interval']
-            self.hb = Heartbeat(interval, self.ws)
-            await self.identify()
-            asyncio.create_task(self.monitor())
-            while self.active: await asyncio.sleep(1)
- 
-    async def resume(self):
-        sesh = json.load(open('session.json'))
-        op6 = dscord.Payload(6, token=self.token, 
-                session_id=sesh['id'], seq=sesh['s'])
-        await self.ws.send(op6.json())
+            intv = op10['d']['heartbeat_interval']
+            task = await asyncio.gather(
+                    self.heartbeat(intv),
+                    self.monitor()
+                    )
+
+    async def heartbeat(self, interval: int):
+        hb, i = dscord.Payload(1).json(), interval//1000
+        while True:
+            await asyncio.sleep(i)
+            await self.ws.send(hb)
 
     async def identify(self):
-        properties = {
+        prop = {
                 '$os': 'linux',
                 '$browser': 'IE',
-                '$device': 'ta-1077'}
-        op2 = dscord.Payload(2, token=self.token, 
-                intents=32509, properties=properties)
-        await self.ws.send(op2.json())
-        READY = json.loads(await self.ws.recv())
-        sesh = {'id': READY['d']['session_id']}
+                '$device': 'ta-1077'
+                }
+        op2 = dscord.Payload(2, 
+                token=self.token, 
+                intents=32509, 
+                properties=prop).json()
+        await self.ws.send(op2)
+        op0 = json.loads(await self.ws.recv())
+        sesh = {
+                'id': op0['d']['session_id']
+                }
         json.dump(sesh, open('session.json', 'w'))
+
+    async def resume(self):
+        sesh = json.load(open('session.json'))
+        op6 = dscord.Payload(6, 
+                token=self.token, 
+                session_id=sesh['id'], 
+                seq=sesh['s'])
+        await self.ws.send(op6.json())
 
     async def monitor(self):
         try:
+            await self.identify()
             while True:
                 payload = json.loads(await self.ws.recv())
                 if self.debug:
@@ -88,7 +83,8 @@ class Gateway:
                 elif p.op == 9:
                     await asyncio.sleep(3)
                     await self.identify()
-        except ConnectionClosedOK: print('Disconnected!')
+        except ConnectionClosedOK: 
+            print('[DISCONNECTED]')
 
     async def handle(self, payload):
         for event in self.events:
@@ -103,9 +99,7 @@ class Gateway:
         while self.active:
             try: asyncio.run(self.connect())
             except Exception as e: print(e)
-            self.hb.stop()
         os.remove('session.json')
-        print(threading.active_count())
 
     def stop(self):
         self.active = False
