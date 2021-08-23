@@ -5,50 +5,168 @@ from typing import Callable, List
 
 import dscord
 
-history = []
+help_general = '''
+Dscord Cli Client
+A cursed cli bot client for Discord, it is by chance illegal.
 
+[COMMANDS]
+/channels - list text channels in a guilds by partial guild ids.
+/send - send messages to a channel, to last active channel by default.
+/quit - you know... (;-;)
+'''
+
+help_send = '''
+/send
+[DESCRIPTION]
+Send message to a channel, to last active channel by default.
+
+[ALIASES] 
+s, say, send
+
+[FLAGS]
+-l {n}
+Set the scope to last n + 1 th active channel.
+
+-c {x}
+Set the scope by first/last n th length of channel ids.
+'''
+
+cmds = {
+        'help': ['help', 'h'],
+        'send': ['send', 'say', 's'],
+        'quit': ['quit', 'q', 'exit'],
+        'chns': ['channels', 'chns', 'cs']
+}
+
+flgs = {
+        'send': ['-l', '-c']
+}
+
+usage = {
+        'send': '[USAGE] /s {?flag} {?arg} {context}',
+        'chns': '[USAGE] /cs {guild_id_abrv}',
+}
+
+cache_guilds = cache_history = []
+
+
+def id_abrv(i: str, ids) -> str:
+    if '..' in i and len(i) > 4:
+        if i[:2] == '..':
+            i = i[2:]
+            js = [j[1][-len(i):] for j in ids]
+        elif i[-2:] == '..':
+            i = i[:-2]
+            js = [j[1][:len(i)] for j in ids]
+        ks = []
+        while js.count(i) > 0:
+            x = js.index(i)
+            js.pop(x)
+            ks.append(ids[x])
+        return ks
+
+
+def read_list(header: str, xs: List[str], *, 
+        f = None) -> str:
+    txt = '\n'
+    if header:
+        txt = txt + header + '\n'
+    if f:
+        xs = [f(x) for x in xs]
+    for x in xs:
+        txt = txt + x + '\n'
+    return txt
 
 class Cli:
     def __init__(self, access_token: str):
         self.gate = dscord.Gateway(access_token)
-        self.req = dscord.Request(access_token)
-
-    def guild_list(self):
-        guilds = [(g['name'], g['id']) for g in self.req.get_guilds().json()]
-        s = '\nGUILDS\n'
-        for g in guilds:
-            s += f'{g[0]} - {g[1]} \n'
-        return s
+        self.rqst = dscord.Request(access_token)
 
     def listen(self):
-        for char in sys.stdin.read():
-            global stdin
-            stdin += char
-            print(stdin)
-#            if line[0] != '/': continue
-#            cmd, *tail = line[1:].split(' ')
-#            if cmd in ['help', 'h']:
-#                print('[KYS]')
-#            elif cmd in ['send', 's']:
-#                if tail[0][0] == '-':
-#                    flag, arg, *tail = tail
-#                    if flag == '-l' and arg.isnumeric():
-#                        pos = 0 - (int(arg) + 1)
-#                        scope = history[pos]
-#                else:
-#                    scope = history[-1]
-#                msg = vars(dscord.Message(' '.join(tail)))
-#                self.req.post_message(scope[1], msg)
-#            elif cmd in ['quit', 'exit', 'q']:
-#                print('Quitting..')
-#                self.gate.stop()
-#                break
+        while True:
+            user_input = input()
+            if user_input[0] != '/': continue
+            args = user_input[1:].split(' ')
+            cmd = args.pop(0).lower()
+            if cmd in cmds['help']:
+                print(help_general)
+            elif cmd in cmds['send']:
+                self.command_send(args)
+            elif cmd in cmds['chns']:
+                if len(args) < 1: 
+                    print(usage['chns'])
+                    continue
+                arg = args.pop(0)
+                global cache_guilds
+                if not cache_guilds:
+                    cache_guilds = self.rqst.get_guilds().json()
+                glds = [(g['name'], g['id']) for g in cache_guilds]
+                res = id_abrv(arg, glds)
+                if res:
+                    r = len(res)
+                    if r == 1:
+                        self.read_channels(res[0][1], h=res[0][0])
+                    elif r > 1:
+                        f = lambda g : f'{g[0]} - {g[1]}'
+                        read_list('[POSSIBLITY]', res, f=f)
+                else:
+                    print('[NO MATCH]')
+            elif cmd in cmds['quit']:
+                self.gate.stop()
+                break
+
+    def command_send(self, args: List[str]) -> tuple:
+        if len(args) < 1:
+            print(usage['send'])
+            return
+        if args[0] in flgs['send']:
+            flag = args.pop(0)[1:]
+            if flag == 'l':
+                h = len(history)
+                if h == 0:
+                    print('[NO HISTORY]')
+                    return
+                elif h == 1:
+                    pos = 0
+                elif h > 1:
+                    if args[0].isnumeric():
+                        p = abs(int(args.pop(0))) + 1
+                        pos = -p if h < p else 0
+                    else:
+                        pos = -2
+                    if len(args) < 1:
+                        print(usage['send'])
+                        return
+        else:
+            if history:
+                pos = -1
+            else:
+                print('[NO HISTORY]')
+                return
+        chn_id = history[pos][1]
+        msg = vars(dscord.Message(' '.join(args)))
+        self.rqst.post_message(chn_id, msg)
 
     def start(self):
-        print(self.guild_list())
+        self.read_guilds()
         threading.Thread(target=self.gate.start).start()
         print('Enter /help for more info!')
         self.listen()
+
+    def read_guilds(self):
+        guilds = self.rqst.get_guilds().json()
+        gs = [(g['name'], g['id']) for g in guilds]
+        f = lambda g : f'{g[0]} - {g[1]}'
+        print(read_list('[GUILDS]', gs, f=f))
+
+    def read_channels(self, gld_id: str, *, h: str = None):
+        channels = self.rqst.get_channels(gld_id).json()
+        cs = [(c['name'], c['id']) for c in channels]
+        f = lambda c : f'{c[0]} - {c[1]}'
+        if not h: h = 'channels'
+        print(read_list(f'[{h.upper()}]', cs, f=f))
+
+
 
 
 client = Cli(getpass('Bot token: '))
