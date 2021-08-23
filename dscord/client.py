@@ -1,4 +1,5 @@
 from getpass import getpass
+import sys
 import threading
 from typing import Callable, List
 
@@ -20,26 +21,28 @@ class Cli:
         return s
 
     def listen(self):
-        while True:
-            user_input = input()
-            if user_input[0] != '/': continue
-            cmd, *tail = user_input[1:].split(' ')
-            if cmd in ['help', 'h']:
-                print('[KYS]')
-            elif cmd in ['send', 's']:
-                if tail[0][0] == '-':
-                    flag, arg, *tail = tail
-                    if flag == '-l' and arg.isnumeric():
-                        pos = 0 - (int(arg) + 1)
-                        scope = history[pos]
-                else:
-                    scope = history[-1]
-                msg = vars(dscord.Message(' '.join(tail)))
-                self.req.post_message(scope[1], msg)
-            elif cmd in ['quit', 'exit', 'q']:
-                print('Exiting..')
-                self.gate.stop()
-                break
+        for char in sys.stdin.read():
+            global stdin
+            stdin += char
+            print(stdin)
+#            if line[0] != '/': continue
+#            cmd, *tail = line[1:].split(' ')
+#            if cmd in ['help', 'h']:
+#                print('[KYS]')
+#            elif cmd in ['send', 's']:
+#                if tail[0][0] == '-':
+#                    flag, arg, *tail = tail
+#                    if flag == '-l' and arg.isnumeric():
+#                        pos = 0 - (int(arg) + 1)
+#                        scope = history[pos]
+#                else:
+#                    scope = history[-1]
+#                msg = vars(dscord.Message(' '.join(tail)))
+#                self.req.post_message(scope[1], msg)
+#            elif cmd in ['quit', 'exit', 'q']:
+#                print('Quitting..')
+#                self.gate.stop()
+#                break
 
     def start(self):
         print(self.guild_list())
