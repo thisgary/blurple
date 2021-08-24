@@ -1,5 +1,5 @@
 import json
-from typing import List
+from typing import List, Union
 
 
 class Embed:
@@ -49,16 +49,14 @@ class History:
 
 
 class Payload:
-    def __init__(self, op: int = None, **d):
+    def __init__(self, op: int = None, **d) -> None:
         self.op = op
         self.d = d
 
-    def json(self) -> str:
+    def dump(self) -> str:
         return json.dumps(self.__dict__)
 
-    def read(self, p: dict):
-        self.__dict__.update(p)
-
-    def reads(self, payload: str):
-        payload = json.loads(payload)
-        self.__dict__.update(payload)
+    def load(self, pl: Union[dict, str]):
+        if type(pl) == str:
+            pl = json.loads(pl)
+        self.__dict__.update(pl)
