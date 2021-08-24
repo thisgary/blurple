@@ -4,24 +4,31 @@ import threading
 from typing import Callable
 
 import dscord
+import dscord.object
 import websockets
-from websockets.exceptions import ConnectionClosedOK
 
 __all__ = ['Gateway']
 
 
 class Gateway:
+    def event(self, func: callable) -> callable:
+        if asyncio.iscoroutinefunction(func):
+            self.events.append(func)
+        return func
+
     def __init__(self, access_token: str, *, 
-            version: int = 9, debug: bool = False) -> None:
+            version: int = 9, debug: bool = True) -> None:
         self.token  = access_token
         self.uri = f'wss://gateway.discord.gg/?v={version}&encoding=json'
         self.debug = debug
+        self.events = []
 
     def start(self) -> None:
         self.active = True
         while self.active:
             try:
-                asyncio.run(self.connect())
+                asyncio.run(self.connect(), 
+                        debug=self.debug)
             except Exception as e:
                 print(e)
         else:
@@ -32,14 +39,10 @@ class Gateway:
 
     async def connect(self) -> None:
         async with websockets.connect(self.uri) as self.ws:
-            monitor = asyncio.create_task(self.monitor())
-            while self.active:
-                await asyncio.sleep(0.5)
-            else:
-                self.hb.cancel()
-                monitor.cancel()
+            await self.monitor()
+            self.hb.cancel()
 
-    async def monitor(self):
+    async def monitor(self) -> None:
         while True:
             payload = await self.ws.recv()
             if self.debug:
@@ -49,7 +52,7 @@ class Gateway:
             pl.load(payload)
             op = pl.op
             if op == 10:
-                intv = payload.d['heartbeat_interval']
+                intv = pl.d['heartbeat_interval']
                 self.hb = asyncio.create_task(self.heartbeat(intv))
                 await self.identify()
             elif op == 9:
@@ -59,7 +62,7 @@ class Gateway:
                 await self.resume()
             elif op == 0:
                 self.seq = pl.s
-                yield pl
+                await self.handle(pl)
 
     async def heartbeat(self, interval: int) -> None:
         i = interval // 1000
@@ -91,4 +94,11 @@ class Gateway:
                 session_id=self.sesh_id, 
                 seq=self.seq).dump()
         await self.ws.send(op6)
+
+    async def handle(self, pl: dscord.object.Payload):
+        for event in self.events:
+            try:
+                await event(pl)
+            except Exception as e:
+                print(e)
 
