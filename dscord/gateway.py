@@ -17,7 +17,7 @@ class Gateway:
         return func
 
     def __init__(self, access_token: str, *, 
-            version: int = 9, debug: bool = True) -> None:
+            version: int = 9, debug: bool = False) -> None:
         self.token  = access_token
         self.uri = f'wss://gateway.discord.gg/?v={version}&encoding=json'
         self.debug = debug
