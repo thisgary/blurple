@@ -31,6 +31,8 @@ class Gateway:
                         debug=self.debug)
             except Exception as e:
                 print(e)
+                if self.debug:
+                    open('error.log', 'a+').write(f'{e}\n')
         else:
             os.remove('session.json')
 
@@ -47,7 +49,7 @@ class Gateway:
             payload = await self.ws.recv()
             if self.debug:
                 print(payload)
-                open('dscord.log', 'a+').write(f'{payload}\n')
+                open('dscord.log', 'a+', encoding='utf-8').write(f'{payload}\n')
             pl = dscord.Payload()
             pl.load(payload)
             op = pl.op
