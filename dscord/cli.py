@@ -159,7 +159,7 @@ class Cli:
         self.req.post_message(chn_id, msg)
 
 
-client = Cli(getpass('Bot token: '))
+client = Cli(sys.argv[1])
 
 
 @client.gate.event
