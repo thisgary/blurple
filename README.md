@@ -1,3 +1,9 @@
+# News
+
+[Discord.py author ragequitted.](https://gist.github.com/Rapptz/4a2f62751b9600a31a0d3c78100287f1) Still repect his work tho.
+
+So this project will be archieved for months for futher observations.
+
 # Dscord 2
 
 Yet another Discord API wrapper.
