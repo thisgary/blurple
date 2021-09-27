@@ -2,16 +2,16 @@
 
 Yet another Discord API wrapper, but less ironic.
 
-# Purpose
+## Purpose
 
 Solely for me to learn how REST API works.
 It was never actively maintained, since ~~I am lazy, and~~ I've achieved my objective... or did I?
 
-# Installation
+## Installation
 
     pip install git+https://github.com/thisgary/Dscord2
 
-# Feature
+## Feature
 
 `dscord.Request` - Perform requests with Discord API.
 
