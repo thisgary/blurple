@@ -1,6 +1,6 @@
 # Dscord2
 
-Yet another Discord API wrapper, but less ironic.
+Yet another Discord API wrapper, not so ironically.
 
 ## Purpose
 
