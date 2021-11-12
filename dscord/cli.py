@@ -1,7 +1,7 @@
 from getpass import getpass
 import sys
 import threading
-from typing import Callable, List, Tuple
+from typing import List, Tuple
 
 import dscord
 
@@ -71,7 +71,7 @@ def read_list(header: str, xs: List[str], *,
 
 class Cli:
     def __init__(self, access_token: str) -> None:
-        self.gate = dscord.Gateway(access_token)
+        self.gate = dscord.Gateway(access_token, debug=True)
         self.req = dscord.Request(access_token)
 
     def start(self) -> None:
@@ -123,8 +123,7 @@ class Cli:
                 else:
                     print('[NO MATCH]')
             elif cmd in cmds['quit']:
-                self.gate.stop()
-                break
+                sys.exit()
 
     def command_send(self, args: List[str]) -> tuple:
         if len(args) < 1:
@@ -180,6 +179,5 @@ async def on_message(p):
         author = p.d['author']
         a = f"{author['username']}#{author['discriminator']}"
         print(f'{t} {s} {a}: {content}')
-
 
 client.start()
