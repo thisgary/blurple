@@ -1,7 +1,6 @@
 import asyncio
 import json
 
-import dscord
 import websockets
 
 
@@ -9,41 +8,39 @@ __all__ = ['Gateway']
 
 
 class Gateway:
+    events = []
+    
     def __init__(self, access_token: str, *, 
                  version: int = 9, debug: bool = False) -> None:
         self.token  = access_token
         self.uri = f'wss://gateway.discord.gg/?v={version}&encoding=json'
         self.debug = debug
-        self.events = []
 
-    async def heartbeat(self, interval: int) -> None:
-        i = interval // 1000
-        OP1 = json.dumps({'op': 1})
+    async def heartbeat(self, i: int) -> None:
         while True:
             await asyncio.sleep(i)
+            OP1 = json.dumps({'op': 1, 'd': self.seq})
             await self.ws.send(OP1)
 
     async def identify(self) -> None:
         OP2 = json.dumps({
             'op': 2, 
-            'token': self.token, 
-            'intents': 32509, 
-            'properties': {
-                '$os': 'linux', 
-                '$browser': 'IE', 
-                '$device': 'ta-1077'
+            'd': {
+                'token': self.token, 
+                'intents': 32509, 
+                'properties': {
+                    '$os': 'linux', '$browser': 'IE', '$device': 'ta-1077'
+                }
             }
         })
         await self.ws.send(OP2)
         r = json.loads(await self.ws.recv())
-        self.sesh_id = r['d']['session_id']
+        self.id = r['d']['session_id']
 
     async def resume(self) -> None:
         OP6 = json.dumps({
             'op': 6,
-            'token': self.token,
-            'session_id': self.sesh_id, 
-            'seq': self.seq
+            'd': {'token': self.token, 'session_id': self.id, 'seq': self.seq}
         })
         await self.ws.send(OP6)
 
@@ -64,11 +61,6 @@ class Gateway:
 
     async def connect(self) -> None:
         async with websockets.connect(self.uri) as self.ws:
-            r = json.loads(await self.ws.recv())
-            self.hb = asyncio.create_task(
-                self.heartbeat(r['d']['heartbeat_interval'])
-            )
-            await self.identify()
             while True:
                 r = json.loads(await self.ws.recv())
 
@@ -76,21 +68,25 @@ class Gateway:
                     print(r)
                     open('pl.log', 'a+', encoding='utf-8').write(f'{r}\n')
 
-                if op := r['op'] == 9: # new session
-                    await asyncio.sleep(3)
-                    await self.identify()
-                elif op == 7: # reconnect
-                    await self.resume()
-                elif op == 0:
+                if (op := r['op']) == 0:
                     self.seq = r['s']
                     await self.handle(r)
-            self.hb.cancel()
+                elif op == 7: # reconnect
+                    await self.resume()
+                elif op == 9: # invalid session
+                    await asyncio.sleep(3)
+                    await self.identify()
+                elif op == 10: # new session
+                    i = r['d']['heartbeat_interval']/1000
+                    self.hb = asyncio.create_task(self.heartbeat(i))
+                    await self.identify()
+        self.hb.cancel()
 
     def start(self) -> None:
         while True:
             try:
-                asyncio.run(self.connect(), debug=self.debug)
+                asyncio.run(self.connect())
             except Exception as e:
                 print(e)
                 if self.debug: 
-                    open('error.log', 'a+').write(f'{e}\n')
+                    open('pl.log', 'a+').write(f'{e}\n')
