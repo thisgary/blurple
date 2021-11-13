@@ -9,22 +9,10 @@ It was never actively maintained, since ~~I am lazy, and~~ I've achieved my obje
 
 ## Installation
 
-    pip install git+https://github.com/thisgary/Dscord2
+    pip install git+https://github.com/thisgary/5865f2
 
 ## Feature
 
-### `blurple.Request`
+`blurple.Request` - Perform requests with Discord API.
 
-Perform requests with Discord API.
-
-    import blurple
-    client = blurple.Gateway(TOKEN)
-    client.start()
-
-### `blurple.Websocket`
-
-Establish connection with Discord Gateway API.
-
-    import blurple
-    req = blurple.Request(TOKEN)
-    print(req.get_dms())
+`blurple.Gateway` - Establish websocket connection with Discord Gateway API.

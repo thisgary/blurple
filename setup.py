@@ -1,8 +1,8 @@
 import setuptools
 
 setuptools.setup(
-        name='Dscord 2',
-        version='0.8.7',
+        name='5865F2',
+        version='0.9',
         author='thisgary',
         author_email='gary.github@gmail.com',
         description='Yet another Discord API wrapper.',
@@ -15,7 +15,7 @@ setuptools.setup(
             'Operating System :: OS Independent',
         ],
         license='MIT',
-        python_requires='>=3.7',
+        python_requires='>=3.8',
         install_requires=['requests', 'websockets'],
         setup_requires=['pytest_runner'],
         tests_require=['pytest'],
