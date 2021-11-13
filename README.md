@@ -1,4 +1,4 @@
-# Dscord2
+# 5865F2
 
 Yet another Discord API wrapper, not so ironically.
 
@@ -13,6 +13,18 @@ It was never actively maintained, since ~~I am lazy, and~~ I've achieved my obje
 
 ## Feature
 
-`dscord.Request` - Perform requests with Discord API.
+### `blurple.Request`
 
-`dscord.Websocket` - Establish connection with Discord Gateway API.
+Perform requests with Discord API.
+
+    import blurple
+    client = blurple.Gateway(TOKEN)
+    client.start()
+
+### `blurple.Websocket`
+
+Establish connection with Discord Gateway API.
+
+    import blurple
+    req = blurple.Request(TOKEN)
+    print(req.get_dms())

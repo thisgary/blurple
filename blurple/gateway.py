@@ -1,6 +1,8 @@
 import asyncio
+from datetime import datetime
 import json
 
+from .object import Payload
 import websockets
 
 
@@ -17,32 +19,30 @@ class Gateway:
         self.debug = debug
 
     async def heartbeat(self, i: int) -> None:
+        op1 = Payload(1)
         while True:
             await asyncio.sleep(i)
-            OP1 = json.dumps({'op': 1, 'd': self.seq})
-            await self.ws.send(OP1)
+            op1.load['d'] = self.seq
+            await self.ws.send(op1)
+
+    async def recv(self) -> dict:
+        pl = json.loads(await self.ws.recv())
+        if self.debug: 
+            print(pl)
+            log = f'[{datetime.now()}] {pl}\n'
+            open('blurple.log', 'a+', encoding='utf-8').write(log)
+        return pl
 
     async def identify(self) -> None:
-        OP2 = json.dumps({
-            'op': 2, 
-            'd': {
-                'token': self.token, 
-                'intents': 32509, 
-                'properties': {
-                    '$os': 'linux', '$browser': 'IE', '$device': 'ta-1077'
-                }
-            }
-        })
-        await self.ws.send(OP2)
-        r = json.loads(await self.ws.recv())
-        self.id = r['d']['session_id']
+        PROP = {'$os': 'linux', '$browser': 'IE', '$device': 'ta-1077'}
+        op2 = Payload(2, token=self.token, intents=32509, properties=PROP)
+        await self.ws.send(op2.load)
+        op0 = await self.recv()
+        self.id = op0['d']['session_id'] # TODO: 429
 
     async def resume(self) -> None:
-        OP6 = json.dumps({
-            'op': 6,
-            'd': {'token': self.token, 'session_id': self.id, 'seq': self.seq}
-        })
-        await self.ws.send(OP6)
+        OP6 = Payload(6, token=self.token, session_id=self.id, seq=self.seq)
+        await self.ws.send(OP6.load)
 
     # USAGE: @Gateway().event
     def event(self, func: callable) -> callable:
@@ -62,22 +62,17 @@ class Gateway:
     async def connect(self) -> None:
         async with websockets.connect(self.uri) as self.ws:
             while True:
-                r = json.loads(await self.ws.recv())
-
-                if self.debug: 
-                    print(r)
-                    open('pl.log', 'a+', encoding='utf-8').write(f'{r}\n')
-
-                if (op := r['op']) == 0:
-                    self.seq = r['s']
-                    await self.handle(r)
+                pl = await self.recv()
+                if (op := pl['op']) == 0:
+                    self.seq = pl['s']
+                    await self.handle(pl)
                 elif op == 7: # reconnect
                     await self.resume()
                 elif op == 9: # invalid session
                     await asyncio.sleep(3)
                     await self.identify()
                 elif op == 10: # new session
-                    i = r['d']['heartbeat_interval']/1000
+                    i = pl['d']['heartbeat_interval']/1000
                     self.hb = asyncio.create_task(self.heartbeat(i))
                     await self.identify()
         self.hb.cancel()

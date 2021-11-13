@@ -53,10 +53,10 @@ class Payload:
         self.op = op
         self.d = d
 
-    def dump(self) -> str:
+    @property
+    def load(self) -> str:
         return json.dumps(self.__dict__)
 
-    def load(self, pl: Union[dict, str]):
-        if type(pl) == str:
-            pl = json.loads(pl)
-        self.__dict__.update(pl)
+    @load.setter
+    def load(self, pay: Union[dict, str]):
+        self.__dict__.update(json.loads(pay) if type(pay) == str else pay)
