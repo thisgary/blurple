@@ -1,4 +1,4 @@
-# 5865F2
+# Blurple
 
 Yet another Discord API wrapper, not so ironically.
 
@@ -9,7 +9,7 @@ It was never actively maintained, since ~~I am lazy, and~~ I've achieved my obje
 
 ## Installation
 
-    pip install git+https://github.com/thisgary/5865f2
+    pip install git+https://github.com/thisgary/blurple
 
 ## Feature
 

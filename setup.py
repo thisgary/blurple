@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(
-        name='5865F2',
+        name='blurple',
         version='0.9',
         author='thisgary',
         author_email='gary.github@gmail.com',
